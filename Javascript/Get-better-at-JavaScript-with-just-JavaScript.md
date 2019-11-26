@@ -168,6 +168,7 @@ list.addEventListener("click", e => {
 ```
 
 Event Delegation에도 사용한다.
+
 모든 리스트 내의 아이템에 이벤트 리스너를 붙일 필요가 없다.
 
 ## 3. .contains()
