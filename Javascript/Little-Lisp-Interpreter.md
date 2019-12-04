@@ -197,7 +197,7 @@ const categorize = input => {
 `parenthesize()`의 14번 줄이 `categorize()`가 반환한 객체를 `list`에 추가하고 나머지 `input` 및 `list`와 함꼐 재귀한다.
 
 ```javascript
-var parenthesize = function(input, list) {
+const parenthesize = (input, list) => {
   if (list === undefined) {
     return parenthesize(input, []);
   } else {
