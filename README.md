@@ -6,6 +6,7 @@
 
 ## Categories
 
+- [DataStructure](#dataStructure)
 - [DevOps](#devOps)
   <!-- * [Database](#database) -->
   <!-- * [Design-patterns](#design-patterns) -->
@@ -13,8 +14,13 @@
 - [Javascript](#javascript)
 - [Linux](#linux)
 - [Ideas](#ideas)
+- [Software](#software)
 
 ---
+
+## DataStructure
+
+- [Segment-Tree.md](DataStructure/Segment-Tree.md)
 
 ## DevOps
 
@@ -33,3 +39,8 @@
 ## Ideas
 
 - [etc.md](Ideas/etc.md)
+
+## Software
+
+- [Bit-and-Byte.md](Software/Bit-and-Byte.md)
+- [Joel-Test.md](Software/Joel-Test.md)
