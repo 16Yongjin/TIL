@@ -91,11 +91,6 @@ export default class SegmentTree {
 
   // 세그먼트 트리를 재귀적을 만든다.
   buildTreeRecursively(leftInputIndex, rightInputIndex, position) {
-    // If low input index and high input index are equal that would mean
-    // the we have finished splitting and we are already came to the leaf
-    // of the segment tree. We need to copy this leaf value from input
-    // array to segment tree.
-
     // 작은 인덱스랑 큰 인덱스가 같다면 배열 나누는 게 끝났으니 Leaf 노드에 도착했다는 뜻이다.
     // 입력 배열에서 세그먼트 트리로 Leaf 값을 복사한다.
     if (leftInputIndex === rightInputIndex) {
@@ -195,10 +190,6 @@ export default class SegmentTree {
 ```
 
 ## 참고
-
-<iframe width="560" height="315" src="https://www.youtube.com/embed/Ic7OO3Uw6J0" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-<iframe width="560" height="315" src="https://www.youtube.com/embed/0l3xN3BpxHg" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 - [Wikipedia](https://en.wikipedia.org/wiki/Segment_tree)
 - [YouTube](https://www.youtube.com/watch?v=ZBHKZF5w4YU&index=65&list=PLLXdhg_r2hKA7DPDsunoDZ-Z769jWn4R8)
