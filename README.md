@@ -6,6 +6,7 @@
 
 ## Categories
 
+- [Algorithms](#algorithms)
 - [DataStructure](#dataStructure)
 - [DevOps](#devOps)
   <!-- * [Database](#database) -->
@@ -17,6 +18,11 @@
 - [Software](#software)
 
 ---
+
+## Algorithms
+
+- [Hamming-Distance.md](Algorithms/Hamming-Distance.md)
+- [Knuth-Morris-Pratt-Algorithm.md](Algorithms/Knuth-Morris-Pratt-Algorithm.md)
 
 ## DataStructure
 
