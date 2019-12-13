@@ -33,6 +33,9 @@ function buildPatternTable(word) {
       patternTable[suffixIndex] = 0;
       suffixIndex += 1;
     } else {
+      // 접두사와 접미사가 더 이상 일치하지 않을 때
+      // 접두사와 접미사 비교 시 중복을 피하기 위해
+      //
       prefixIndex = patternTable[prefixIndex - 1];
     }
   }
