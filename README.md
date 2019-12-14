@@ -27,6 +27,7 @@
 ## DataStructure
 
 - [Segment-Tree.md](DataStructure/Segment-Tree.md)
+- [Bloom-Filter.md](DataStructure/Bloom-Filter.md)
 
 ## DevOps
 
