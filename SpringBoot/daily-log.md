@@ -159,3 +159,125 @@ default-character-set = utf8
 2. 윈도우 서비스에서 MYSql 5.7 을 재시작한다.
 
 3. 테이블은 기존의 인코딩으로 생성되어있으므로 GUI툴로 테이블 Charset을 utf8로 Collation를 utf8_general_ci 바꾼다.
+
+를 해봤는데도 안됐는데
+
+테이블 생성 시 마지막에 `DEFAULT CHARSET=utf8;` 붙이면 해결되는 문제였다.
+
+## 2019년 12월 17일
+
+### AOP
+
+AOP방법은 핵심 기능과 공통 기능을 분리 시켜놓고, 공통 기능을 필요로 하는 핵심 기능들에서 사용하는 방식이다.
+
+게시판 핵심 기능을 구현하는데 권한, 로깅, 트랜잭션 같은 공통 기능을 추가하고
+
+계좌이체 핵심 기능을 구현하는데 다시 권한, 로깅, 트랜잭션 같은 공통 기능을 추가해야 했던 것을
+
+권한, 로깅, 트랜잭션 등 공통 기능들은 알아서 실행되게 하고 핵심 기능 구현에만 집중하도록 하는 기법이다.
+
+#### AOP의 용어
+
+| 용어       | 의미                                                 |
+| ---------- | ---------------------------------------------------- |
+| 관점       | 공통적으로 적용될 기능(권한, 로깅, ...)              |
+| 어드바이스 | 관점의 구현체, 조인포인트에 삽입되어 동작함          |
+| 조인포인트 | 어드바이스 적용 지점, 스프링에서는 메서드 실행단계만 |
+| 포인트컷   | 조인포인트 선별 과정                                 |
+| 타깃       | 어드바이스를 받는 대상                               |
+| 위빙       | 어드바이스를 적용, 삽입하는 것                       |
+
+#### 어드바아스
+
+동작 시점에 따라 다섯 종류로 구분된다.
+
+- Before Advice - 메서드 실행 전
+- After returning Advice - 메서드 실행 성공 후
+- After throwing Advice - `try/catch`의 `catch` 같음
+- After Advice - `finally` 같음
+- Around Advice - 범용적
+
+#### 포인트컷의 `execution`
+
+- `*` - 모든 값
+- `..` - 0개 이상
+
+`execution(void select*(..))`
+
+리턴이 `void` 메서드 이름이 `select`로 시작, 파라미터가 0개 이상 호출될 때
+
+`execution(* board..select*(**))`
+
+`board` 패키지의 모든 하위 패키지에 있는 `select`로 시작하고 파라미터가 두 개인 모든 메서드가 호출될 때
+
+### 트랜잭션
+
+스프링의 트랙잭션 처리 방식은 세 종류로 구분된다.
+
+- XML - xml 파일에 트랜잭션 쿼리 짜서 실행하는 듯
+- 에노테이션
+- AOP
+
+#### @Transaction 어노테이션 이용하기
+
+DB 설정 클래스에 `@EnableTransactionManagement` 어노테이션과 아래 메서드를 추가한다.
+
+```java
+@Bean
+public PlatformTransactionManager transactionManager() throws Exception {
+	return new DataSourceTransactionManager(dataSource());
+}
+```
+
+그리고 트랜잭션 처리를 원하는 곳에 `@Transactional` 어노테이션을 추가하면 된다.
+
+이렇게 간단하지만 새로운 클래스를 만들 때마다 `@Transactional` 어노테이션을 붙여 줘야 하므로 확장성이 떨어진다.
+
+#### AOP로 트랜잭션 설정하기
+
+`TransactionAspect` 클래스를 만들고 르랜잭션 이름, 롤백 룰, 포인트컷을 설정한다.
+
+#### 두 방식의 차이
+
+|      | `@Transaction 어노테이션`            | AOP                                      |
+| ---- | ------------------------------------ | ---------------------------------------- |
+| 장점 | 무설정                               | 트랜잭션 누락될 일 없음                  |
+|      | 원하는 곳에만 설정, 성능 영향 최소화 | 외부 라이브러리도 적용 가능              |
+| 단점 | 어노테이션 누락 가능                 | 필요없는 곳까지 트랜잭션 적용, 성능 영향 |
+|      | 외부라이브러리에 적용 불가           | 원하는 곳에 트랜잭션 적용하기 어려움     |
+
+### 예외처리하기
+
+1. `try/catch` 이용
+2. 각 컨트롤러단에서 `@ExceptionHandler` 이용 - 코드 중복 많아짐
+3. `@ControllerAdvice`를 이용한 전역 예외처리
+
+```java
+@Slf4j
+@ControllerAdvice
+public class ExceptionHandler {
+
+  @org.springframework.web.bind.annotation.ExceptionHandler(Exception.class)
+  public ModelAndView defaultExceptionHandler(HttpServletRequest request, Exception exception) {
+    ModelAndView mv = new ModelAndView("/error/error_default");
+
+    mv.addObject("exception", exception);
+
+    log.error("defaultExceptionHandler", exception);
+
+    return mv;
+  }
+}
+```
+
+전역적으로 에러 발생 시 유저에게 에러 로그를 보여주는 에러 핸들러다.
+
+여기선 모든 에러 처리를 하지만 실제 프로젝트에서는 다양한 에러에 맞는 각각의 에러처리 필요하다
+
+추가로, 위와 같이 예외 로그를 화면에 노출시키면 프로그램의 취약점이 드러나 공격받을 수 있다.
+
+### 헌글 처리를 위한 인코딩
+
+스프링 부트 2.1.x 버전부터는 이미 인코딩 필터가 적용되있다.
+
+굳이 적용하면 왜 적용하냐고 경고를 준다.
