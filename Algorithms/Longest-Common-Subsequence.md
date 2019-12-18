@@ -10,7 +10,7 @@
 `diff` 유틸리티와 같은 데이터 비교 프로그램의 기초이며 생물 정보학에 응용됩니다.
 또한 Git 같은 버전 관리 시스템에서 파일에 대한 여러 변경 사항을 조정하기 위해서도 사용됩니다.
 
-## Example
+## 예제
 
 - 입력 수열 `ABCDGH`와 `AEDFHR`의 LCS는 `ADH`이고 길이는 3이다.
 - 입력 수열 `AGGTAB`와 `GXTXAYB`의 LCS는 `GTAB`이고 길이는 4이다.
@@ -89,7 +89,11 @@ function longestCommonSubsequence(set1, set2) {
 }
 ```
 
-## References
+## 참고
 
 - [Wikipedia](https://en.wikipedia.org/wiki/Longest_common_subsequence_problem)
 - [YouTube](https://www.youtube.com/watch?v=NnD96abizww&list=PLLXdhg_r2hKA7DPDsunoDZ-Z769jWn4R8)
+
+## 출처
+
+[GitHub](https://github.com/trekhleb/javascript-algorithms/tree/master/src/algorithms/sets/longest-common-subsequence)
