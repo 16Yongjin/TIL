@@ -16,6 +16,7 @@
 - [Linux](#linux)
 - [Ideas](#ideas)
 - [Software](#software)
+- [SpringBoot](#SpringBoot)
 
 ---
 
@@ -23,6 +24,7 @@
 
 - [Hamming-Distance.md](Algorithms/Hamming-Distance.md)
 - [Knuth-Morris-Pratt-Algorithm.md](Algorithms/Knuth-Morris-Pratt-Algorithm.md)
+- [Longest-Common-Subsequence.md](Algorithms/Longest-Common-Subsequence.md)
 
 ## DataStructure
 
@@ -51,3 +53,8 @@
 
 - [Bit-and-Byte.md](Software/Bit-and-Byte.md)
 - [Joel-Test.md](Software/Joel-Test.md)
+
+## SpringBoot
+
+- [daily-log.md](SpringBoot/daily-log.md)
+- [import-error.md](SpringBoot/import-error.md)
