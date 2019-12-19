@@ -281,3 +281,97 @@ public class ExceptionHandler {
 스프링 부트 2.1.x 버전부터는 이미 인코딩 필터가 적용되있다.
 
 굳이 적용하면 왜 적용하냐고 경고를 준다.
+
+## 2019년 12월 19일
+
+### 파일 업로드와 다운로드
+
+스프링에는 파일 업로드를 위한 `MultipartResolver` 인터페이스가 정의되어 있어
+
+파일 업로드 기능 구현시 아파치의 `CommonsMultipartResolver`나 서블릿 API의 `StandardServletMultipartResolver` 구현체를 사용하면 된다.
+
+`CommonsMultipartResolver`를 구현하고 첨부파일 관련 구성에서 스프링의 특성인 자동구성이 되지 않게 하기 위해 아래 코드를 추가한다.
+
+```java
+@SpringBootApplication(exclude = { MultipartAutoConfiguration.class })
+```
+
+### 뷰 변경
+
+폼으로 데이터 전송 시 파일도 같이 첨부되도록 `form` 태그에 `enctype="multopart/form-data"` 속성을 추가한다.
+
+`type`이 `file`인 `input` 태그도 추가한다.
+
+### 파일 업로드 유틸
+
+1. 파일이 업로드될 폴더를 생성한다.
+2. 파일확장자를 확인해서 서버에 저장될 파일 이름을 생성한다.(중복 방지를 위해 나노초
+   사용)
+3. BoardFileDto에 데이터베이스에 저장할 파일정보 담기
+4. 업로드된 파일을 새로운 이름으로 바꾸어 지정된 경로에 저장
+
+### 여러 개의 값 넣는 매퍼 구문
+
+```xml
+<insert id="insertBoardFileList" parameterType="board.board.dto.BoardFileDto">
+	<![CDATA[
+		INSERT INTO t_file
+		(
+			board_idx,
+			original_file_name,
+			stored_file_path,
+			file_size,
+			creator_id,
+			created_datetime
+		)
+		VALUES
+	]]>
+	<foreach collection="list" item="item" separator=",">
+		(
+			#{item.boardIdx},
+			#{item.originalFileName},
+			#{item.storedFilePath},
+			#{item.fileSize},
+			'admin',
+			NOW()
+		)
+	</foreach>
+</insert>
+```
+
+`insert` 내부에 `foreach`를 사용하고 각 항목을 지정하는 별칭을 통해 데이터에
+접근한다. `seperator`로 값 사이를 구분해준다.
+
+### 첨부된 파일 목록 보여주기
+
+1. 파일 목록을 조회하는 쿼리를 추가한다.
+2. `BoardDto`에 fileList 속성을 추가한다.
+3. 뷰에 th:each 속성으로 파일 리스트를 렌더링한다.
+
+### 파일 다운로드
+
+1. 파일 정보를 조회하는 쿼리를 추가한다.
+
+쿼리 작성 시 파라미터 타입으로 `map`을 사용한다. 파라미터 전달만을 목적으로 DTO를 만들기 애매하기 때문이다.
+
+매퍼 인터페이스에서 `@Param` 어노테이션을 사용하면 해당 파라미터들이 `Map`에 저장되어 쿼리에 파라미터로 전달할 수 있다.
+
+2. 뷰에 다운로드 링크를 삽입한다.
+
+함수를 호출하는것 같은 아래 코드는 렌더링되면
+
+`th:href="@{/board/downloadBoardFile.do(idx=${list.idx}, boardIdx=${list.boardIdx})}"`
+
+`/board/downloadBoardFile.do?idx=파일번호&boardIdx=글번호` 같이 파라미터가 추가되어 화면에 나타난다.
+
+3. 파일의 바이너리 데이터를 사용자에게 전달한다.
+
+컨트롤러 메서드에 `HttpServletResponse`를 파라미터로 설정하고 이를 적절히 설정하면 사용자에게 전달할 데이터를 원하는 대로 만들 수 있다.
+
+DB에서 파일 정보를 가져오고, 파일 경로에서 파일을 읽고 `byte[]` 형태로 변환한다.
+
+`response`의 헤더에 컨텐츠 타입, 크기, 형태 설정하고 파일 이름은 UTF-8로 인코딩한다.
+
+헤더 작성 시 띄어쓰기와 대소문자를 주의한다.
+
+바이트 배열을 `response`에 작성하고 버퍼를 정리 후 닫아준다.
