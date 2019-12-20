@@ -25,6 +25,7 @@
 - [Hamming-Distance.md](Algorithms/Hamming-Distance.md)
 - [Knuth-Morris-Pratt-Algorithm.md](Algorithms/Knuth-Morris-Pratt-Algorithm.md)
 - [Longest-Common-Subsequence.md](Algorithms/Longest-Common-Subsequence.md)
+- [Longest-Common-Substring.md](Algorithms/Longest-Common-Substring.md)
 
 ## DataStructure
 
