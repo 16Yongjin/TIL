@@ -375,3 +375,47 @@ DB에서 파일 정보를 가져오고, 파일 경로에서 파일을 읽고 `by
 헤더 작성 시 띄어쓰기와 대소문자를 주의한다.
 
 바이트 배열을 `response`에 작성하고 버퍼를 정리 후 닫아준다.
+
+## 2019년 12월 20일
+
+### RESTful 게시판으로 변경하기
+
+컨트롤러를 아래와 같이 작성한다.
+
+| 기능              | 요청 방식 | URL           |
+| ----------------- | --------- | ------------- |
+| 게시판 목록       | GET       | /board        |
+| 게시글 작성 화면  | GET       | /board/write  |
+| 게시글 작성       | POST      | /board/write  |
+| 게시글 상세 화면  | GET       | /board/글번호 |
+| 게시글 수정       | PUT       | /board/글번호 |
+| 게시글 삭제       | DELETE    | /board/글번호 |
+| 첨부파일 다운로드 | GET       | /board/file   |
+
+### `PUT`과 `DELETE` 방식 지원하기
+
+`HTML`의 `form`은 `POST와` `GET` 방식의 요청만 지원하고 `PUT`과 `DELETE` 방식은 지원하지 않는다.
+
+스프링(2.1.x)에는 `HiddenHttpMethodFilter` 필터가 이미 등록되어있다.
+
+`_method`라는 이름의 파라미터가 존재할 경우 그 값을 요청 방식으로 사용한다.
+
+자바스크립트로 아래의 요소의 `value`를 `PUT`이나 `DELETE`로 설정하면 된다.
+
+```html
+<input type="hidden" id="method" name="_method" />
+```
+
+### REST API로 변경하기
+
+일반적으로 애플리케이션은 백엔드 서버와 클라이언트로 나뉜다.
+
+API와 화면이 구분된 진정한 REST API를 구현해본다.
+
+컨트롤러에 `@RestController` 어노테이션을 사용한다.
+
+`@RestController`는 `@Controller`와 `@ResponseBody` 어노테이션을 합친 것이다. 해당 API의 응답결과를 웹 응답 바디를 이용해 JSON 형식으로 보내준다.
+
+`@RequestBody` 어노테이션은 메서드 파리미터가 HTTP 패킷의 바디에 담겨 있어야 한다는 것을 나타낸다.
+
+그래서 `POST`와 `PUT` 메서드는 `@RequestBody` 어노테이션을, `GET` 메서드는 `@RequestParam` 어노테이션을 사용한다.
