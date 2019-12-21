@@ -1,4 +1,4 @@
-# 스프링 부트 개발 일지
+`# 스프링 부트 개발 일지
 
 ## 2019월 12월 14일
 
@@ -419,3 +419,130 @@ API와 화면이 구분된 진정한 REST API를 구현해본다.
 `@RequestBody` 어노테이션은 메서드 파리미터가 HTTP 패킷의 바디에 담겨 있어야 한다는 것을 나타낸다.
 
 그래서 `POST`와 `PUT` 메서드는 `@RequestBody` 어노테이션을, `GET` 메서드는 `@RequestParam` 어노테이션을 사용한다.
+
+## 2019년 12월 21일
+
+### JPA란?
+
+JPA(Java Persistence API)란 자바 객체와 DB 테이블 간의 매핑을 처리하는 ORM 기술의 표준이다.
+
+JPA는 ORM 기능이 어떻게 동작되어야 한다는 것을 정의한 기술 명세이며 사용하기 위해서는 JPA의 구현체가 필요하다.
+
+이런 구현체로는 하이버네이트, 이클립스링크 등이 있고 이를 JPA 프로바이더라고 한다.
+
+실제 프로젝트에서는 하이버네이트를 많이 사용하지만 스프링과의 연동이 간단하지 않아 하이버네이트를 래핑한 스프링 데이터 JPA를 사용한다.
+
+### JPA의 장점
+
+- 개발이 편하다. 반복적으로 CRUD SQL을 직접 작성하지 않아도 된다.
+- 데이터베이스에 독립적인 개발이 가능하다. DB가 바뀌어도 상관없다.
+- 유지보수가 쉽다. 데이터 스키마 변경 시 JPA 엔티티만 수정하면 돼서 데이터테이블 변경이 쉽다.
+
+### JPA의 단점
+
+- 학습 곡선이 크다. SQL을 직접 작성하지 않아 튜닝이 어려울 수 있다.
+- 특정 DB의 기능을 사용할 수 없다.
+- 객체 위주의 설계보단 데이터베이스의 테이블에 맞게 객체나 로직이 설계되기 때문에 객체지향적 설계가 어려울 수 있다.
+
+### 스프링 데이터 JPA
+
+스프링에서 JPA를 쉽게 사용하도록 해 주는 라이브러리다.
+
+`Repository`라는 인터페이스를 상속받아 규칙에 맞게 구현하면 된다.
+
+### 기본 설정 추가
+
+`application.properties`에 아래 설정을 추가한다.
+
+```
+spring.jpa.database=mysql
+// 기본 엔진이 MyISAM이라 InnoDB로 변경한다.
+spring.jpa.database-platform=org.hibernate.dialect.MySQL5InnoDBDialect
+// 실제 개발 시 꼭 false로 해야한다. 예상치 못하게 DB 변경 시 데이터가 삭제될 수 있기 떄문이다.
+spring.jpa.generate-ddl=true
+// MySQL의 자동 증가 속성을 사용하기에 필요 없어서 false
+spring.jpa.hibernate.use-new-id-generator-mappings=false
+```
+
+`BoardApplication` 클래스에 아래 어노테이션을 추가해서 같이 `Jsr310JpaConverters` 클래스를 적용한다.
+
+```java
+@EntityScan(basePackageClasses = { Jsr310JpaConverters.class }, basePackages = { "board" })
+```
+
+DB의 `DATETIME`과 자바 8의 날짜 API를 문제없이 사용하기 위함이다.
+
+### 엔티티 생성하기
+
+`@Entity` 어노테이션으로 해당 클래스가 JPA 엔티티임을 나타낸다.
+
+`@Table(name= "table_name")` 어노테이션으로 테이블 매핑이 되도록 한다.
+
+`@Id` 어노테이션으로 기본키임을 나타낸다.
+
+`@GeneratedValue(strategy = GenerationType.AUTO)` 어노테이션으로 기본키 생성 시 DB에서 제공하는 전략을 따른다.
+MySQL은 자동증가, 오라클의 경우 시퀀스를 생성한다.
+
+`@Column(nullable = false)` 어노테이션으로 칼럼에 `NOT NULL` 소서을 지정한다.
+
+`@OneToMany` 어노테이션으로 1:N 관계를 표현한다.
+
+`@JoinColumn` 어노테이션으로 릴레이션 관계가 있는 테이블의 칼럼을 지정한다.
+
+### 리포지터리 작성하기
+
+`CrudRepository` 인터페이스를 상속해서 리포지터리를 작성한다.
+
+`CrudRepository` 인터페이스는 도메인 클래스와 도메인 id 타입을 파라미터로 받는다.
+
+`findAllByOrderByBoardIdxDesc`와 같이 규칙에 맞게 메서드 이름을 추가하면 실행 시 메서드의 이름에 따라 쿼리가 생성되어 실행된다.
+
+`@Query` 어노테이션으로 실행하고 싶은 쿼리를 직접 정의할 수 있다.
+
+나머지 필요한 메서드(`save`, `find`, `delete`, ...)는 `CrudRepository`에 이미 정의되어서 따로 정의할 필요없다.
+
+### 서비스 작성하기
+
+리포지터리의 `save` 메서드는 `insert`와 `update` 두 가지 역할을 수행한다.
+
+저장할 내용이 새로 생성된 내용이면 `insert`를, 기존의 내용에서 변경되었을 경우 `update`를 수행한다.
+
+### 스프링 데이터 JPA 리포지터리 인터페이스
+
+```
+Repository<T, ID>
+		 ↑ extends
+CrudRepository<T, ID>
+		 ↑ extends
+PagingAndSortingRepository<T, ID>
+		 ↑ extends
+JpaRepository<T, ID>
+```
+
+`Repository`는 아무런 기능이 없어서 잘 안 쓴다.
+
+`CrudRepository`는 CRUD 기능을 제공한다.
+
+`PagingAndSortingRepository`는 `CrudRepository` + 페이징 및 정렬 기능이 추가되어 있다.
+
+`JpaRepository`는 JPA에 특화된 기능이 추가되어 있다.
+
+### 쿼리 메서드
+
+규칙에 메서드를 추가하면 그 메서드 이름으로 쿼리를 생성하는 기능이다.
+
+쿼리 메서드는 `find...By`, `read...By`, `query...By`, `count...By`, `get...By`로 시작해야 한다.
+
+`By`뒤는 컬럼 이름으로 구성된다. (ex, `findByTitle(String title)`)
+
+두 개 이상의 속성을 조합하려면 `And` 키워드를 사용한다.
+
+스프링 JPA에서 제공하는 비교연산자 목록은 [여기](https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#jpa.query-methods.query-creation)서 찾아 볼 수 있다.
+
+### `@Query` 사용하기
+
+1. [?숫자] 형식으로 파라미터를 지정한다. 순서대로 파라미터가 지정된다.
+
+2. :[변수이름]으로 파라미터를 지정한다. 변수이름은 메서드의 `@Param` 어노테이션에 대응된다. `:boardIdx`의 `boardIdx` 변수는 `@Param("boardIdx")` 어노테이션이 있는 메서드의 파라미터를 사용한다.
+
+파라미터 개수가 많아지거나 쿼리의 길이가 많이질 경우 쿼리, 메서드 파라미터를 알아보기 힘들고 파라미터 순서를 바꿔 입력하는 실수를 할 수 있기에 두 번째 방법을 사용하는 것이 좋다.
