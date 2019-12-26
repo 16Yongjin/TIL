@@ -9,6 +9,7 @@
 - [Algorithms](#algorithms)
 - [DataStructure](#dataStructure)
 - [DevOps](#devOps)
+- [Git](#git)
   <!-- * [Database](#database) -->
   <!-- * [Design-patterns](#design-patterns) -->
   <!-- * [Git](#git) -->
@@ -36,6 +37,10 @@
 
 - [A Successful Deployment Model.md](DevOps/A-successful-deployment-model.md)
 - [Should You Use Kubernetes and Docker In Your Next Project.md](DevOps/Should-You-Use-Kubernetes-and-Docker-In-Your-Next-Project.md)
+
+# Git
+
+- [how-to-undo-almost-anything-with-git.md](Git/how-to-undo-almost-anything-with-git.md)
 
 ## Javascript
 
