@@ -8,6 +8,7 @@
 
 - [Algorithms](#algorithms)
 - [DataStructure](#dataStructure)
+- [DesignPattern]](#designPattern)
 - [DevOps](#devOps)
 - [Git](#git)
   <!-- * [Database](#database) -->
@@ -32,6 +33,10 @@
 
 - [Segment-Tree.md](DataStructure/Segment-Tree.md)
 - [Bloom-Filter.md](DataStructure/Bloom-Filter.md)
+
+# DesignPattern
+
+- [Strategy-Pattern.md](DesignPattern/Strategy-Pattern.md)
 
 ## DevOps
 
