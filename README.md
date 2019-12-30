@@ -36,6 +36,8 @@
 
 # DesignPattern
 
+- [Decorator-Pattern.md](DesignPattern/Decorator-Pattern.md)
+- [Observer-Pattern.md](DesignPattern/Observer-Pattern.md)
 - [Strategy-Pattern.md](DesignPattern/Strategy-Pattern.md)
 
 ## DevOps
