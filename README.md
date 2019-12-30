@@ -12,8 +12,6 @@
 - [DevOps](#devOps)
 - [Git](#git)
   <!-- * [Database](#database) -->
-  <!-- * [Design-patterns](#design-patterns) -->
-  <!-- * [Git](#git) -->
 - [Javascript](#javascript)
 - [Linux](#linux)
 - [Ideas](#ideas)
@@ -24,50 +22,50 @@
 
 ## Algorithms
 
-- [Hamming-Distance.md](Algorithms/Hamming-Distance.md)
-- [Knuth-Morris-Pratt-Algorithm.md](Algorithms/Knuth-Morris-Pratt-Algorithm.md)
-- [Longest-Common-Subsequence.md](Algorithms/Longest-Common-Subsequence.md)
-- [Longest-Common-Substring.md](Algorithms/Longest-Common-Substring.md)
+- [Hamming Distance](Algorithms/Hamming-Distance.md)
+- [Knuth Morris Pratt Algorithm](Algorithms/Knuth-Morris-Pratt-Algorithm.md)
+- [Longest Common Subsequence](Algorithms/Longest-Common-Subsequence.md)
+- [Longest Common Substring](Algorithms/Longest-Common-Substring.md)
 
 ## DataStructure
 
-- [Segment-Tree.md](DataStructure/Segment-Tree.md)
-- [Bloom-Filter.md](DataStructure/Bloom-Filter.md)
+- [Segment Tree](DataStructure/Segment-Tree.md)
+- [Bloom Filter](DataStructure/Bloom-Filter.md)
 
 ## DesignPattern
 
-- [Decorator-Pattern.md](DesignPattern/Decorator-Pattern.md)
-- [Observer-Pattern.md](DesignPattern/Observer-Pattern.md)
-- [Strategy-Pattern.md](DesignPattern/Strategy-Pattern.md)
+- [Decorator Pattern](DesignPattern/Decorator-Pattern.md)
+- [Observer Pattern](DesignPattern/Observer-Pattern.md)
+- [Strategy Pattern](DesignPattern/Strategy-Pattern.md)
 
 ## DevOps
 
-- [A Successful Deployment Model.md](DevOps/A-successful-deployment-model.md)
-- [Should You Use Kubernetes and Docker In Your Next Project.md](DevOps/Should-You-Use-Kubernetes-and-Docker-In-Your-Next-Project.md)
+- [A Successful Deployment Model](DevOps/A-successful-deployment-model.md)
+- [Should You Use Kubernetes and Docker In Your Next Project](DevOps/Should-You-Use-Kubernetes-and-Docker-In-Your-Next-Project.md)
 
 ## Git
 
-- [how-to-undo-almost-anything-with-git.md](Git/how-to-undo-almost-anything-with-git.md)
+- [How to undo almost anything with git](Git/how-to-undo-almost-anything-with-git.md)
 
 ## Javascript
 
-- [Getbetter at JavaScript withjust JavaScript.md](Javascript/Get-better-at-JavaScript-with-just-JavaScript.md)
-- [Little Lisp Interpreter.md](Javascript/Little-Lisp-Interpreter.md)
+- [Getbetter at JavaScript with just JavaScript](Javascript/Get-better-at-JavaScript-with-just-JavaScript.md)
+- [Little Lisp Interpreter](Javascript/Little-Lisp-Interpreter.md)
 
 ## Linux
 
-- [Sudo Vulnerability.md](Linux/sudo-vulnerability.md)
+- [Sudo Vulnerability](Linux/sudo-vulnerability.md)
 
 ## Ideas
 
-- [etc.md](Ideas/etc.md)
+- [etc](Ideas/etc.md)
 
 ## Software
 
-- [Bit-and-Byte.md](Software/Bit-and-Byte.md)
-- [Joel-Test.md](Software/Joel-Test.md)
+- [Bit and Byte](Software/Bit-and-Byte.md)
+- [Joel Test](Software/Joel-Test.md)
 
 ## SpringBoot
 
-- [daily-log.md](SpringBoot/daily-log.md)
-- [import-error.md](SpringBoot/import-error.md)
+- [daily log](SpringBoot/daily-log.md)
+- [import error](SpringBoot/import-error.md)
