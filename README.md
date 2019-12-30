@@ -8,7 +8,7 @@
 
 - [Algorithms](#algorithms)
 - [DataStructure](#dataStructure)
-- [DesignPattern]](#designPattern)
+- [DesignPattern](#designPattern)
 - [DevOps](#devOps)
 - [Git](#git)
   <!-- * [Database](#database) -->
@@ -34,7 +34,7 @@
 - [Segment-Tree.md](DataStructure/Segment-Tree.md)
 - [Bloom-Filter.md](DataStructure/Bloom-Filter.md)
 
-# DesignPattern
+## DesignPattern
 
 - [Decorator-Pattern.md](DesignPattern/Decorator-Pattern.md)
 - [Observer-Pattern.md](DesignPattern/Observer-Pattern.md)
@@ -45,7 +45,7 @@
 - [A Successful Deployment Model.md](DevOps/A-successful-deployment-model.md)
 - [Should You Use Kubernetes and Docker In Your Next Project.md](DevOps/Should-You-Use-Kubernetes-and-Docker-In-Your-Next-Project.md)
 
-# Git
+## Git
 
 - [how-to-undo-almost-anything-with-git.md](Git/how-to-undo-almost-anything-with-git.md)
 
