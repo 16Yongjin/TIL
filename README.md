@@ -34,8 +34,11 @@
 
 ## DesignPattern
 
+- [Command Pattern](DesignPattern/Command-Pattern.md)
 - [Decorator Pattern](DesignPattern/Decorator-Pattern.md)
+- [Factory Pattern](DesignPattern/Factory-Pattern.md)
 - [Observer Pattern](DesignPattern/Observer-Pattern.md)
+- [Singleton Pattern](DesignPattern/Singleton-Pattern.md)
 - [Strategy Pattern](DesignPattern/Strategy-Pattern.md)
 
 ## DevOps
