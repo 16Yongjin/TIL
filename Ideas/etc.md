@@ -51,3 +51,15 @@
 해야 한다.
 안 하다.
 싶어 하다
+
+# 20200105
+
+[Glowing Gradient Button Animation Effects on Hover](https://codepen.io/16yongjin/pen/abzEorY)
+
+완전 이쁘다.
+
+다음의 검색창 테두리도 이 효과를 볼 수 있다.
+
+길다란(400px) 그레디언트 배경을 만들고 `background-position` 속성을 바꾸는 애니메이션을 줘서 배경이 움직이게 해 버튼의 색상이 형형색색으로 변한다.
+
+`filter: blur()` 속성으로 빛나는 효과도 추가했다.
