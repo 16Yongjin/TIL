@@ -61,6 +61,7 @@
 
 ## Ideas
 
+- [죽을 때까지 프로그래머로 사는 법](Ideas/죽을-때까지-프로그래머로-사는-법.md)
 - [etc](Ideas/etc.md)
 
 ## Software
