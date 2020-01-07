@@ -43,3 +43,69 @@ React의 `componentDidMount`나 Vue의 `created` 같은 컴포넌트 라이프�
 자바에서는 `Comparable` 인터페이스를 구현하면 `Arrays`의 `sort()` 템플릿 메서드를 사용할 수 있다.
 
 자바스크립트에서는 `Array.prototype.sort()`에 알맞는 비교함수를 넣으면 뭐든지 정렬을 할 수 있다.
+
+> 이 경우는 상속이나 구현을 사용하지 않아서 맞는 예제인지 애매하다..
+
+## 구현
+
+딥러닝 모델을 훈련하는 프레임워크를 만든다.
+
+추상 클래스인 `ModelTrainer`르 정의한다.
+
+`train()` 메서드는 템플릿 메서드로 서브 클래스에서 구현되어 일부 기능을 수행할 메서드들을 호출한다.
+
+```typescript
+abstract class ModelTrainer {
+  train() {
+    this.predict();
+    this.calcLoss();
+    this.backPropagate();
+    this.updateWeight();
+  }
+
+  updateWeight() {
+    console.log("가중치 업데이트");
+  }
+
+  abstract predict(): void;
+
+  abstract calcLoss(): void;
+
+  abstract backPropagate(): void;
+}
+```
+
+`SimpleModelTrainer`는 `ModelTrainer`를 상속받아 필요한 부분만 구현한다.
+
+```typescript
+class SimpleModelTrainer extends ModelTrainer {
+  predict() {
+    console.log("값 에측");
+  }
+
+  calcLoss() {
+    console.log("손실 계산");
+  }
+
+  backPropagate() {
+    console.log("역전파");
+  }
+}
+```
+
+## 테스트
+
+```typescript
+const trainer = new SimpleModelTrainer();
+
+trainer.train();
+```
+
+### 결과
+
+```
+값 에측
+손실 계산
+역전파
+가중치 업데이트
+```
