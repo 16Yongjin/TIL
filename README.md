@@ -38,6 +38,7 @@
 - [Decorator Pattern](DesignPattern/Decorator-Pattern.md)
 - [Facade Pattern](DesignPattern/Facade-Pattern.md)
 - [Factory Pattern](DesignPattern/Factory-Pattern.md)
+- [Iterator Pattern](DesignPattern/Iterator-Pattern.md)
 - [Observer Pattern](DesignPattern/Observer-Pattern.md)
 - [Singleton Pattern](DesignPattern/Singleton-Pattern.md)
 - [Strategy Pattern](DesignPattern/Strategy-Pattern.md)
