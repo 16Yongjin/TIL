@@ -21,7 +21,7 @@ public interface Iterator {
 
 ## 이터레이터 사용
 
-아래와 같이 `while`문과 함깨 사용한다.
+아래와 같이 `while`문과 함께 사용한다.
 
 ```java
 while (iterator.hasNext()) {
