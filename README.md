@@ -60,6 +60,7 @@
 
 ## Linux
 
+- [우분투 Node.js 서버 설정](Linux/우분투-Node.js-서버-설정.md)
 - [Sudo Vulnerability](Linux/sudo-vulnerability.md)
 
 ## Ideas
