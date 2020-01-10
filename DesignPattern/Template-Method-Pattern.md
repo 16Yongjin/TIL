@@ -50,7 +50,7 @@ React의 `componentDidMount`나 Vue의 `created` 같은 컴포넌트 라이프�
 
 딥러닝 모델을 훈련하는 프레임워크를 만든다.
 
-추상 클래스인 `ModelTrainer`르 정의한다.
+추상 클래스인 `ModelTrainer`를 정의한다.
 
 `train()` 메서드는 템플릿 메서드로 서브 클래스에서 구현되어 일부 기능을 수행할 메서드들을 호출한다.
 

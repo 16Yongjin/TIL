@@ -34,6 +34,7 @@
 
 ## DesignPattern
 
+- [Adapter Pattern](DesignPattern/Adapter-Pattern.md)
 - [Command Pattern](DesignPattern/Command-Pattern.md)
 - [Decorator Pattern](DesignPattern/Decorator-Pattern.md)
 - [Facade Pattern](DesignPattern/Facade-Pattern.md)
