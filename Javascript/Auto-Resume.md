@@ -8,15 +8,16 @@ const main = async () => {
   const page = await browser.newPage();
   await page.goto("https://www.saramin.co.kr");
 
-  await page.evaluate(
-    (id, pw) => {
-      document.querySelector("#login_person_id").value = id;
-      document.querySelector("#login_person_pwd").value = pw;
-    },
-    saramin_id,
-    saramin_pw
-  );
+  // 로그인
+  await page.type("#login_person_id", saramin_id);
+  await page.type("#login_person_pwd", saramin_pw);
   await page.click(".btn_login");
+  await page.waitForNavigation();
+
+  // 내 프로필로 이동
+  await page.goto(
+    "https://www.saramin.co.kr/zf_user/member/profile/school-write"
+  );
   await page.waitForNavigation();
 };
 
