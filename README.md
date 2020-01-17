@@ -42,6 +42,7 @@
 - [Iterator Pattern](DesignPattern/Iterator-Pattern.md)
 - [Observer Pattern](DesignPattern/Observer-Pattern.md)
 - [Singleton Pattern](DesignPattern/Singleton-Pattern.md)
+- [State Pattern](DesignPattern/State-Pattern.md)
 - [Strategy Pattern](DesignPattern/Strategy-Pattern.md)
 - [Template Method Pattern](DesignPattern/Template-Method-Pattern.md)
 
