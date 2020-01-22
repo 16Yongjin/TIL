@@ -17,3 +17,11 @@
 - [javascript-questions/README-ko_KR.md at master · lydiahallie/javascript-questions](https://github.com/lydiahallie/javascript-questions/blob/master/ko-KR/README-ko_KR.md)
 
 - [javascript-testing-best-practices/readme.kr.md at master · goldbergyoni/javascript-testing-best-practices](https://github.com/goldbergyoni/javascript-testing-best-practices/blob/master/readme.kr.md)
+
+- [All – Tiny Helpers](https://tiny-helpers.dev/)
+
+- [웹 스크래핑을 위한 국세청 공인인증서 로그인](https://twinmoon.tistory.com/1)
+
+- [Roam: Why I Love It and How I Use It - Nat Eliason](https://www.nateliason.com/blog/roam)
+
+* [퀴비(Quibi):카젠버그의 자신감](https://stibee.com/api/v1.0/emails/share/6g9LYqAJqvLSqMQXqfrfR-ecqSnBWg)
