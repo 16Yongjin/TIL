@@ -14,6 +14,7 @@
   <!-- * [Database](#database) -->
 - [Javascript](#javascript)
 - [Linux](#linux)
+- [Rust](#rust)
 - [Ideas](#ideas)
 - [Software](#software)
 - [SpringBoot](#SpringBoot)
@@ -66,6 +67,10 @@
 
 - [우분투 Node.js 서버 설정](Linux/우분투-Node.js-서버-설정.md)
 - [Sudo Vulnerability](Linux/sudo-vulnerability.md)
+
+## Linux
+
+- [WSL 설정](Rust/wsl-setup.md)
 
 ## Ideas
 
