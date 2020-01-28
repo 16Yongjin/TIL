@@ -68,8 +68,9 @@
 - [우분투 Node.js 서버 설정](Linux/우분투-Node.js-서버-설정.md)
 - [Sudo Vulnerability](Linux/sudo-vulnerability.md)
 
-## Linux
+## Rust
 
+- [소유권 개념](Rust/ownership.md)
 - [WSL 설정](Rust/wsl-setup.md)
 
 ## Ideas
