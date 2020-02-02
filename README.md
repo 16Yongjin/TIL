@@ -60,6 +60,8 @@
 
 ## Javascript
 
+- [\$x 유틸함수 구현](Javascript/$x-implementation.md)
+- [크롬 콘솔 유틸리티 함수들](Javascript/chrome-console-utilities.md)
 - [Getbetter at JavaScript with just JavaScript](Javascript/Get-better-at-JavaScript-with-just-JavaScript.md)
 - [Little Lisp Interpreter](Javascript/Little-Lisp-Interpreter.md)
 
