@@ -2,7 +2,7 @@
 
 ## 사람인 학력사항 자동입력
 
-`userData`에 알맞는 정보를 채우면 된다.
+`userData`에 알맞은 정보를 채우면 된다.
 
 ```javascript
 const puppeteer = require("puppeteer");

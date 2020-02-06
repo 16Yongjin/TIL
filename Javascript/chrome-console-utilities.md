@@ -50,7 +50,7 @@ XPath문에 일치하는 돔 요소 배열 반환
 
 ## `inspect(object/function)`
 
-요소나 객체를 알맞는 패널에서 보여줌
+요소나 객체를 알맞은 패널에서 보여줌
 
 돔 요소는 Elements 패널에서, 자바스크립트 힙 객체는 Profiles 패널에서 보여줌
 

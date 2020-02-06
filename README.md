@@ -2,8 +2,6 @@
 
 > Today I Learned
 
----
-
 ## Categories
 
 - [Algorithms](#algorithms)
@@ -15,11 +13,10 @@
 - [Javascript](#javascript)
 - [Linux](#linux)
 - [Rust](#rust)
+- [Project](#project)
 - [Ideas](#ideas)
 - [Software](#software)
 - [SpringBoot](#SpringBoot)
-
----
 
 ## Algorithms
 
@@ -76,6 +73,10 @@
 - [참조자](Rust/references.md)
 - [슬라이스](Rust/slice.md)
 - [WSL 설정](Rust/wsl-setup.md)
+
+## Project
+
+- [네이버 AI 버닝데이 준비](Project/naver-ai-burning.md)
 
 ## Ideas
 
