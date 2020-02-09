@@ -73,6 +73,7 @@
 - [if let을 사용한 간결한 흐름제어](Rust/if_let.md)
 - [match 흐름 제어 연산자](Rust/match.md)
 - [메서드와 연관함수](Rust/methods.md)
+- [모듈](Rust/modules.md)
 - [소유권 개념](Rust/ownership.md)
 - [참조자](Rust/references.md)
 - [슬라이스](Rust/slice.md)
