@@ -73,6 +73,7 @@
 - [컬렉션 - 문자열](Rust/collection-string.md)
 - [컬렉션 - 해쉬맵](Rust/collection-hash-map.md)
 - [열거형](Rust/enums.md)
+- [에러 핸들링](Rust/error-handling.md)
 - [if let을 사용한 간결한 흐름제어](Rust/if_let.md)
 - [match 흐름 제어 연산자](Rust/match.md)
 - [메서드와 연관함수](Rust/methods.md)
