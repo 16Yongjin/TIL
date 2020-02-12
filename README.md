@@ -81,7 +81,7 @@
 - [소유권 개념](Rust/ownership.md)
 - [참조자](Rust/references.md)
 - [슬라이스](Rust/slice.md)
-- [구조체]](Rust/structs.md)
+- [구조체](Rust/structs.md)
 - [WSL 설정](Rust/wsl-setup.md)
 
 ## Project
