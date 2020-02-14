@@ -76,6 +76,7 @@
 - [에러 핸들링](Rust/error-handling.md)
 - [제네릭](Rust/generics.md)
 - [if let을 사용한 간결한 흐름제어](Rust/if_let.md)
+- [라이프타임](Rust/lifetime.md)
 - [match 흐름 제어 연산자](Rust/match.md)
 - [메서드와 연관함수](Rust/methods.md)
 - [모듈](Rust/modules.md)
@@ -83,6 +84,7 @@
 - [참조자](Rust/references.md)
 - [슬라이스](Rust/slice.md)
 - [구조체](Rust/structs.md)
+- [트레잇](Rust/traits.md)
 - [WSL 설정](Rust/wsl-setup.md)
 
 ## Project
