@@ -119,7 +119,7 @@ fn longest(x: &str, y: &str) -> &str {
 
 여러 개의 참조자가 난립하는 상황에서 라이프타임들을 서로 연관 짓기 위해 라이프타임을 명시한다.
 
-(연관 짓는 게 무슨 뜻일까?)
+> 라이프타임들을 연관 짓는다 = 입력되는 참조자의 라이프타임과 반환되는 참조자의 라이프타임을 연결한다.
 
 &nbsp;
 
@@ -346,4 +346,64 @@ fn longest<'a, 'b>(x: &'a str, y: &'b str) -> &str {
 
 라이프타임 추론에 실패해서, 컴파일에 성공하려면 라이프타임을 직접 명시해야 한다.
 
-## 3번 규칙에서 메서드 시그니처의 라이프타임을 생략해도 되는 이유
+## 메서드 정의 시 라이프타임 명시
+
+`impl` 뒤에 라이프타임을 붙인다.
+
+아래 `level` 메서드에서 반환 타입이 참조자가 아니고, 1번 생략 규칙이 적용되기에 라이프타임을 명시하지 않아도 된다.
+
+```rust
+impl<'a> ImportantExcerpt<'a> {
+    fn level(&self) -> i32 {
+        3
+    }
+}
+```
+
+아래는 3번 라이프타임 생략 규칙이 적용된다.
+
+```rust
+impl<'a> ImportantExcerpt<'a> {
+    fn announce_and_return_part(&self, announcement: &str) -> &str {
+        println!("Attention please: {}", announcement);
+        self.part
+    }
+}
+```
+
+위의 코드에는 입력 라이프타임이 2개 있다.
+
+1번 생략 규칙을 적용해서 `&self`와 `announcement`에 라이프타임을 부여한다.
+
+파라미터 중에 `&self`가 있으므로 3번 생략 규칙을 적용해서 반환 타임은 `&self`의 라이프타임을 얻어서, 모든 라이프타임을 추론할 수 있다.
+
+## 정적 라이프타임(`'static`)
+
+`'static` 라이프타임은 프로그램 전체 라이프타임과 동일하다.
+
+모든 스트링 리터럴은 `'static` 라이프타임을 가지고 있어서 아래처럼 작성해도 된다.
+
+```rust
+let s: &'static str = "I have a static lifetime.";
+```
+
+## 제네릭 타입 파라미터, 트레잇 바운드, 라이프타임을 함께 써보기
+
+라이프타임과 제네릭 타입 파라미터를 `<'a, T>`와 같이 나열하고
+
+`where T: Display`로 트레잇 바운드를 설정한다.
+
+```rust
+use std::fmt::Display;
+
+fn longest_with_an_announcement<'a, T>(x: &'a str, y: &'a str, ann: T) -> &'a str
+    where T: Display
+{
+    println!("Announcement! {}", ann);
+    if x.len() > y.len() {
+        x
+    } else {
+        y
+    }
+}
+```
