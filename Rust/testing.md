@@ -210,3 +210,118 @@ cargo test test_name
 `cargo test -- --ignored` 커맨드를 실행하면 무시된 테스트만 실행할 수 있다.
 
 # 테스트 조직화
+
+테스트는 크게 단위(unit) 테스트와 통합(integration) 테스트로 나눈다.
+
+단위 테스트는 작고, 한 번에 하나의 모듈만 분리해서 테스트하고, 비공개 인터페이스를 테스트한다.
+
+통합 테스트는 라이브러리 외부에서 공개 인터페이스를 이용해 여러 개의 모듈을 테스트한다.
+
+## 단위 테스트
+
+관례적으로 각 파일마다 테스트 함수를 담고 있는 `tests` 모듈을 만들고, 이 모듈에 `cfg(test)` 어노테이션을 붙인다.
+
+## 테스트 모듈과 `#[cfg(test)]`
+
+`#[cfg(test)]` 어노테이션은 `cargo build` 실행 시에는 무시하고 `cargo test` 실행 시에만 컴파일하고 실행하라고 러스트에게 지시한다.
+
+통합 테스트는 다른 디렉터리에 있어서 `#[cfg(test)]` 어노테이션이 필요없지만
+
+단위 테스트는 해당 코드와 같이 있기에 컴파일 시 결과물 크기를 줄이기 위해 `#[cfg(test)]`가 필요하다.
+
+## 비공개 함수 테스트하기
+
+```rust
+pub fn add_two(a: i32) -> i32 {
+    internal_adder(a, 2)
+}
+
+fn internal_adder(a: i32, b: i32) -> i32 {
+    a + b
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn internal() {
+        assert_eq!(4, internal_adder(2, 2));
+    }
+}
+```
+
+`internal_adder` 함수는 `pub` 키워드가 없는 비공개 모듈이다.
+
+`tests` 모듈은 같은 파일 내에 있어서 비공개 함수도 일반 함수처럼 가져와서 테스트한다.
+
+## 통합 테스트
+
+라이브러리의 공개 API 부분에 속하는 함수들만 호출해서 테스트한다.
+
+라이브러리의 수 많은 요소들이 함께 올바르게 동작하는지 확인한다.
+
+## tests 디렉토리
+
+프로젝트 디렉토리의 최상위, src 옆에 tests 디렉터리를 만든다.
+
+tests 디렉터리 안에 테스트 파일을 넣어두면 Cargo가 각 파일을 개별 크레이트처럼 컴파일해서 테스트를 실행한다.
+
+_tests/integration_test.rs_ 파일을 만들고 아래 코드를 집어넣는다.
+
+```rust
+extern crate adder;
+
+#[test]
+fn it_adds_two() {
+    assert_eq!(4, adder::add_two(2));
+}
+```
+
+tests 디렉터리 내 각 테스트가 모두 개별적인 크레이트이기에, `extern crate adder`으로 라이브러리를 가져왔다.
+
+`#[cfg(test)]` 어노테이션도 필요 없다.
+
+`cargo test`에 `--test test_name` 옵션을 줘서 특정 통합 테스트 함수를 실행 시킬 수 있다.
+
+ex)
+
+```
+cargo test --test integration_test
+```
+
+## 통합 테스트 내의 서브모듈
+
+통합 테스트 내에서 헬퍼 함수를 공유함과 동시에 테스트 출력에 나오지 않게 하고 싶다
+
+러스트는 `tests/common/mod.rs` 파일로 만든 `common` 모듈을 테스트 파일로 취급하지 않는다.
+
+`tests/common/mod.rs` 만든 후, 아래와 같이 `mod common;`으로 헬퍼 모듈을 불러와 사용할 수 있다.
+
+```rust
+extern crate adder;
+
+mod common;
+
+#[test]
+fn it_adds_two() {
+    common::setup();
+    assert_eq!(4, adder::add_two(2));
+}
+```
+
+## 바이너리 크레이트를 위한 통합 테스트
+
+프로젝트가 `src/lib.rs` 파이링 없고 `src/main.rs` 파일만 가지고 있는 바이너리 프로젝트라면,
+
+`tests` 디렉터리 내에 통합 테스트를 만들어도 `src/main.rs`에 정의된 함수를 가져오기 위해 `extern crate`를 사용할 수 없다.
+
+보통 `src/lib.rs`에 중요한 기능들이 정의되어 있고 이는 `extern crate`으로 불러 와서 테스트할 수 있다.
+
+라이브러리 내의 중요 기능들이 잘 작동한다면, `src/main.rs` 내에 있는 소량의 코드들은 테스트할 필요가 없다.
+
+## 마무리
+
+타입 시스템과 소유권 규칙이 몇 가지 버그를 방지해줘도
+
+테스트는 논리 버그를 잡아서 코드가 기대한 동작을 수행한다고 검증할 수 있다.
