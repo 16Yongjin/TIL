@@ -84,6 +84,7 @@
 - [참조자](Rust/references.md)
 - [슬라이스](Rust/slice.md)
 - [구조체](Rust/structs.md)
+- [테스팅](Rust/testing.md)
 - [트레잇](Rust/traits.md)
 - [WSL 설정](Rust/wsl-setup.md)
 
