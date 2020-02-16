@@ -43,7 +43,7 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 
 벤치마크 테스트를 하지 않아서 `0 measured;` (나이틀리 러스트에서만 가능)
 
-이라고 나왔다.
+라고 나왔다.
 
 ## `assert!` 매크로로 결과 확인하기
 
@@ -51,7 +51,7 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 
 `false`가 들어가면 `panic!` 매크로가 호출돼서 테스트를 실패하게 한다.
 
-## aseert_eq!와 assert_ne!를 이용한 Equality 테스트
+## assert_eq!와 assert_ne!를 이용한 Equality 테스트
 
 `aseert_eq!`는 입력되는 두 인자가 같은지 확인하고
 
@@ -103,7 +103,7 @@ mod tests {
 }
 ```
 
-단순 패닉 발생뿐 만 아니라, 패닉 메시지까지 테스트 해야 한다면
+단순 패닉 발생뿐만 아니라, 패닉 메시지까지 테스트 해야 한다면
 
 `should_panic` 속성에 `expected` 파라미터를 추가한다.
 
@@ -118,6 +118,8 @@ mod tests {
     }
 }
 ```
+
+&nbsp;
 
 # 테스트 실행 방식 제어하기
 
@@ -209,6 +211,8 @@ cargo test test_name
 
 `cargo test -- --ignored` 커맨드를 실행하면 무시된 테스트만 실행할 수 있다.
 
+&nbsp;
+
 # 테스트 조직화
 
 테스트는 크게 단위(unit) 테스트와 통합(integration) 테스트로 나눈다.
@@ -261,11 +265,11 @@ mod tests {
 
 라이브러리의 수 많은 요소들이 함께 올바르게 동작하는지 확인한다.
 
-## tests 디렉토리
+## _tests_ 디렉토리
 
-프로젝트 디렉토리의 최상위, src 옆에 tests 디렉터리를 만든다.
+프로젝트 디렉토리의 최상위, _src_ 옆에 _tests_ 디렉터리를 만든다.
 
-tests 디렉터리 안에 테스트 파일을 넣어두면 Cargo가 각 파일을 개별 크레이트처럼 컴파일해서 테스트를 실행한다.
+_tests_ 디렉터리 안에 테스트 파일을 넣어두면 Cargo가 각 파일을 개별 크레이트처럼 컴파일해서 테스트를 실행한다.
 
 _tests/integration_test.rs_ 파일을 만들고 아래 코드를 집어넣는다.
 
