@@ -90,6 +90,7 @@
 - [커맨드 라인 프로그램 만들기 노트](Rust/greprs-io-project.md)
 - [클로저](Rust/closures.md)
 - [반복자]](Rust/iterators.md)
+- [Cargo와 Crates.io](Rust/cargo-and-creates.md)
 
 ## Project
 
