@@ -322,4 +322,30 @@ rand = "0.3.14"
 
 각 크레이트 디렉터리로 가서 `cargo publish` 명렁을 실행해야 한다.
 
-모든 크레이트를 한번에 배포할 방법은 없다.
+모든 크레이트를 한 번에 배포할 방법은 없다.
+
+&nbsp;
+
+# `cargo install` 을 이용해 Crates.io 에서 바이너리 설치하기
+
+`cargo install` 명령어로 설치한 바이너리들은 모두 러스트가 설치된 `$HOME/.cargo/bin` 디렉터리에 위치한다.
+
+러스트로 작성된 파일 검색 툴 `ripgrep`은 `cargo install ripgrep` 명령어로 설치할 수 있다.
+
+```
+$ cargo install ripgrep
+Updating registry `https://github.com/rust-lang/crates.io-index`
+ Downloading ripgrep v0.3.2
+ --snip--
+   Compiling ripgrep v0.3.2
+    Finished release [optimized + debuginfo] target(s) in 97.91 secs
+  Installing ~/.cargo/bin/rg
+```
+
+설치 완료 후 `rg` 명령어로 바이너리를 사용할 수 있다.
+
+# 커스텀 명령어로 Cargo 확장하기
+
+`cargo install`로 Cargo의 보조 명령어 바이너리를 설치도 할 수 있다.
+
+바이너리 이름이 `cargo-something`이면 `cargo something`으로 명령어를 실행할 수 있다.
