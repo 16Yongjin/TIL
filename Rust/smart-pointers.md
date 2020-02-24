@@ -30,7 +30,7 @@
 
 `Drop` 트레잇은 스마티 포인터가 스코프 밖으로 벗어났을 때 실행되는 코드를 커스터마이징할 수 있게 한다.
 
-## 힙에 있는 데이터를 가리키고, 크기를 알 수 있는 `Box<T>`
+# 힙에 있는 데이터를 가리키고, 크기를 알 수 있는 `Box<T>`
 
 박스로 데이터를 스택에 말고 힙에 저장할 수 있다.
 
@@ -195,7 +195,7 @@ impl<T> MyBox<T> {
 
 이 상태에서는 `MyBox<T>` 타입에 역참조 연산을 할 수 없다.
 
-## `Deref` 트레잇을 구현하여 임의의 타입을 참조자처럼 다루기
+# `Deref` 트레잇을 구현하여 임의의 타입을 참조자처럼 다루기
 
 `Deref` 트레잇은 `self`를 빌려서 내부 데이터의 참조자를 반환하는 `deref` 메서드를 구현하도록 요구한다.
 
@@ -292,3 +292,218 @@ fn main() {
 이 가변 참조자를 불변 참조자로 바꾸는 것은 빌림 규칙을 위반하지 않는다.
 
 반대로, 불변 참조자를 가변 참조자로 바꾸는 경우는, 불변 참조자가 한 개만 있다는 것을 보장할 수 없어서 불가능하다.
+
+# 메모리 정리 코드를 실행하는 `Drop` 트레잇
+
+값이 스코프 밖으로 벗어날 때 일어나는 일을 커스터마이징 할 수 있다.
+
+모든 타입에 `Drop` 트레잇 구현이 가능하다.
+
+파일이나 네트워크 연결 같은 자원 해제할 때도 사용 가능하다.
+
+보통은 스마트 포인터 구현을 위해 사용된다.
+
+ex) `Box<T>`에서 박스가 가리키는 힙 공간을 할당 해제
+
+&nbsp;
+
+다른 언어에서 스마트 포인트 사용 시, 메모리나 자원 해제 코드를 직접 호출해야 한다.
+
+러스트에서는 그 코드를 자동으로 삽입해주기 때문에, 자원 누수를 걱정하지 않아도 된다.
+
+&nbsp;
+
+아래 코드는 인스턴스가 스코프 밖으로 벗어났을 때 `Dropping CustomSmartPointer!`를 출력하는 구조체를 사용한다.
+
+```rust
+struct CustomSmartPointer {
+    data: String,
+}
+
+impl Drop for CustomSmartPointer {
+    fn drop(&mut self) {
+        println!("`{}` 데이터를 가진 CustomSmartPointer이 버려짐!", self.data);
+    }
+}
+
+fn main() {
+    let c = CustomSmartPointer { data: String::from("my stuff") };
+    let d = CustomSmartPointer { data: String::from("other stuff") };
+    println!("CustomSmartPointers 생성됨.");
+}
+
+```
+
+`Drop`은 Prelude에 이미 있어서 가져올 필요 없다.
+
+실행 시 결과는 다음과 같다.
+
+```
+CustomSmartPointers 생성됨.
+`other stuff` 데이터를 가진 CustomSmartPointer이 버려짐!
+`my stuff` 데이터를 가진 CustomSmartPointer이 버려짐!
+```
+
+스코프 밖으로 벗어났을 때 `drop`이 호출되는 것을 알 수 있다.
+
+추가로, 변수는 생성의 역순으로 버려진다.
+
+## `std::mem::drop`을 이용하여 값을 일찍 버리기
+
+수동으로 `Drop` 트레잇의 `drop` 메서드를 직접 호출할 수 없다. (중복 해제 방지)
+
+또한, `drop`이 자동 실행되는 것을 막을 수도 없다. (메모리 누수 방지)
+
+대신에, `std::mem::drop`를 호출해서, 스코프 밖으로 벗어나기 전에 값을 강제로 버릴 수 있다.
+
+아래 코드는 `drop` 메서드 호출해서 `explicit destructor calls not allowed` 에러 발생한다.
+
+```rust
+fn main() {
+    let c = CustomSmartPointer { data: String::from("some data") };
+    println!("CustomSmartPointer created.");
+    c.drop();
+    println!("CustomSmartPointer dropped before the end of main.");
+}
+```
+
+값이 일찍 메모리에서 정리되게 하려면, 아래와 같이 `std::mem::drop` 함수를 사용한다.
+
+`std::mem::drop`는 Prelude에 이미 포함되어 있어서 `drop`으로 호출한다.
+
+```rust
+fn main() {
+    let c = CustomSmartPointer { data: String::from("some data") };
+    println!("CustomSmartPointer 생성됨.");
+    drop(c);
+    println!("main이 끝나기 전에 CustomSmartPointer이 버려짐.");
+}
+```
+
+결과는 다음과 같이 나온다.
+
+```
+CustomSmartPointer 생성됨.
+`some data` 데이터를 가진 CustomSmartPointer이 버려짐!
+main이 끝나기 전에 CustomSmartPointer이 버려짐.
+```
+
+`drop` 함수로 버려진 값을 사용하려고 하면, `borrow of moved value` 에러가 난다.
+
+빌림 시스템의 옮기기를 이용해서 할당 해제된 값이 사용되는 것을 막았다.👍
+
+## 참조 카운팅 스마트 포인터 `Rc<T>`
+
+하나의 값을 여러 참조자가 소유해야 할 때 사용된다.
+
+예를 들어, 그래프 자료 구조에서, 여러 에지가 동일한 노드를 가리킬 수 있다.
+
+노드는 가리키는 에지가 없어질 때까지 메모리에서 정리되면 안 된다.
+
+&nbsp;
+
+`Rc<T>`는 Reference Counting의 약자이다.
+
+참조자의 개수로 참조 여부를 파악한다.
+
+값의 참조자 수가 0이라면, 그 값은 메모리 할당 해제가 가능하다.
+
+값이 여러 부분에서 사용될 때, 사용이 끝나는 부분을 안다면, 그 부분을 데이터의 소유자로 만들면 된다.
+
+하지만, 어디서 사용이 끝날 지 모를 때는 `Rc<T>` 타입을 사용한다.
+
+> ⚠ `Rc<T>`는 오직 단일 스레드 상에서만 사용 가능하다.
+
+## `Rc<T>`를 사용하여 데이터 공유하기
+
+아래 그림과 같이 `a`의 소유권을 공유하는 `b`, `c` 두 리스트를 만들어 본다.
+
+![cons-list-1](https://rinthel.github.io/rust-lang-book-ko/img/trpl15-03.svg)
+
+`Box<T>`를 사용한 `List`로는 위와 같이 만들 수 없다.
+
+```rust
+enum List {
+    Cons(i32, Box<List>),
+    Nil,
+}
+
+use List::{Cons, Nil};
+
+fn main() {
+    let a = Cons(5,
+        Box::new(Cons(10,
+            Box::new(Nil))));
+    let b = Cons(3, Box::new(a));
+    let c = Cons(4, Box::new(a));
+}
+```
+
+`b` 만들 때 쓴 `a`를, `c` 만들 때도 쓰려고 해서 `` use of moved value: `a` `` 에러가 발생한다.
+
+`List`에서 `Box<T>`를 `Rc<T>`로 변경한다.
+
+`b`를 만들 때 `a`의 소유권을 얻는 대신 `a`를 가지고 있는 `Rc<List>`를 클론한다.
+
+참조자의 개수가 1에서 2가 되고, `a`와 `b`가 값을 공유한다.
+
+`c`를 만들 때도 마찬가지다.
+
+`Rc::clone` 호출할 때마다 참조 카운트가 증가되고, 참조자의 수가 0이 아닌 이상 메모리가 정리되지 않는다.
+
+```rust
+enum List {
+    Cons(i32, Rc<List>),
+    Nil,
+}
+
+use List::{Cons, Nil};
+use std::rc::Rc;
+
+fn main() {
+    let a = Rc::new(Cons(5, Rc::new(Cons(10, Rc::new(Nil)))));
+    let b = Cons(3, Rc::clone(&a));
+    let c = Cons(4, Rc::clone(&a));
+}
+```
+
+`Rc<T>`는 `use std::rc::Rc;`로 가져온다.
+
+`Rc::clone(&a)` 대신 `a.clone()`를 호출할 수도 있지만, 러스트에서는 관례적으로 `Rc::clone`을 사용한다.
+
+`Rc::clone`는 깊은 복사를 하는 대신 참조 카운트만 증가시켜서 속도가 빠르다.
+
+## `Rc<T>`의 클론 생성은 참조 카운트를 증가시킨다.
+
+참조 카운트는 `Rc::strong_count` 함수로 얻을 수 있다.
+
+`weak_count`도 있어서 `count`가 아닌 `strong_count`로 호출한다.
+
+```rust
+fn main() {
+    let a = Rc::new(Cons(5, Rc::new(Cons(10, Rc::new(Nil)))));
+    println!("a 생성 후 카운트 = {}", Rc::strong_count(&a));
+    let b = Cons(3, Rc::clone(&a));
+    println!("b 생성 후 카운트 = {}", Rc::strong_count(&a));
+    {
+        let c = Cons(4, Rc::clone(&a));
+        println!("c 생성 후 카운트 = {}", Rc::strong_count(&a));
+    }
+    println!("c가 스코프를 벗어난 후 카운트 = {}", Rc::strong_count(&a));
+}
+```
+
+위의 코드는 다음을 출력한다.
+
+```
+a 생성 후 카운트 = 1
+b 생성 후 카운트 = 2
+c 생성 후 카운트 = 3
+c가 스코프를 벗어난 후 카운트 = 2
+```
+
+카운트가 1에서 시작해서 `clone`을 호출할 때마다 카운트가 1씩 증가한다.
+
+스코프를 벗어나면 자동으로 카운트가 1씩 감소한다.
+
+`main`이 끝나면, 카운트가 0이 돼서, `Rc<List>`는 완전히 메모리에서 정리된다.
