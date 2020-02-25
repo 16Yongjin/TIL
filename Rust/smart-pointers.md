@@ -225,7 +225,7 @@ fn main() {
 }
 ```
 
-`deref` 메서드는 컴파일러에게 어떻게 역참조하는 지 알려준다.
+`deref` 메서드는 컴파일러에게 어떻게 역참조하는지 알려준다.
 
 위의 `*y` 코드는 실제로 `*(y.deref())` 코드로 실행된다.
 
@@ -507,3 +507,100 @@ c가 스코프를 벗어난 후 카운트 = 2
 스코프를 벗어나면 자동으로 카운트가 1씩 감소한다.
 
 `main`이 끝나면, 카운트가 0이 돼서, `Rc<List>`는 완전히 메모리에서 정리된다.
+
+# `RefCell<T>`와 내부 가변성 패턴
+
+## 내부 가변성
+
+불변값을 가변으로 빌려서 데이터를 변형할 수 있게 해주는 기능
+
+데이터 구조 내에서 `unsafe` 코드를 사용해서 러스트의 빌림 규칙을 깨뜨릴 수 있다.
+
+## `Box<T>`, `Rc<T>`, `RefCell<T>` 비교
+
+### 데이터 소유권 개수
+
+`Rc<T>`는 여러 개, `Box<T>`와 `RefCell<T>`는 하나의 데이터의 소유권을 가질 수 있다.
+
+### 빌림 규칙 허용
+
+`Box<T>`는 컴파일 타임에 확인한 불변과 가변 빌림을 허용한다.
+
+`Rc<T>`는 컴파일 타임에 확인한 불변 규칙만 허용한다.
+
+`RefCell<T>`는 런타임에 확인한 불변과 가변 빌림을 허용한다.
+
+### 내부 값 변경 여부
+
+`RefCell<T>`만 런타임 빌림 검사를 해서, 불변값이라도 내부 값 변경이 가능하다.
+
+## Mock 객체를 만들어서 테스트할 떄 유용하다.
+
+목 객체는 테스트 중 일어난 일을 기록해서, 기능이 정확하게 작동했는지 확인한다.
+
+편한 테스트를 위해 불변으로 빌린 값을 변경해야 하지만, 함수 시그내처를 바꿀 수 없을 때, `RefCell<T>`를 사용하면 된다.
+
+`RefCell::new()`로 값을 만들고, 값을 `borrow_mut()` 메서드로 가변으로 빌리고, `borrow` 메서드로 불변으로 빌린다.
+
+여러 개의 불변이나 한 개의 가변 빌림을 가지고 있는지 여부는 런타임에 확인한다.
+
+아래와 같이 `borrow_mut()` 메서드로 값을 두 번 가변으로 빌리면 패닉이 일어난다. (`already borrowed: BorrowMutError` 에러)
+
+```rust
+impl Messenger for MockMessenger {
+    fn send(&self, message: &str) {
+        let mut one_borrow = self.sent_messages.borrow_mut();
+        let mut two_borrow = self.sent_messages.borrow_mut();
+
+        one_borrow.push(String::from(message));
+        two_borrow.push(String::from(message));
+    }
+}
+```
+
+## `Rc<T>`와 `RefCell<T>`의 조합으로 가변 데이터의 복수 소유자 만들기
+
+Cons List 정의에 `RefCell<T>`을 추가해서 리스트 내부의 값을 변경할 수 있다.
+
+```rust
+#[derive(Debug)]
+enum List {
+    Cons(Rc<RefCell<i32>>, Rc<List>),
+    Nil,
+}
+```
+
+`Rc<RefCell<i32>>` 인스턴스인 `value`를 만들고 이를 기반으로, `Cons` 변형타입 `a`와 리스트 `b`, `c`를 만든다.
+
+```rust
+use List::{Cons, Nil};
+use std::rc::Rc;
+use std::cell::RefCell;
+
+fn main() {
+    let value = Rc::new(RefCell::new(5));
+
+    let a = Rc::new(Cons(Rc::clone(&value), Rc::new(Nil)));
+
+    let b = Cons(Rc::new(RefCell::new(6)), Rc::clone(&a));
+    let c = Cons(Rc::new(RefCell::new(10)), Rc::clone(&a));
+
+    *value.borrow_mut() += 10;
+
+    println!("a after = {:?}", a);
+    println!("b after = {:?}", b);
+    println!("c after = {:?}", c);
+}
+```
+
+`value`에 `borrow_mut`를 호출해서 `RefMut<T>` 스마트 포인터를 얻어낸다.
+
+여기에 역참자 연산자를 사용해서 내부 값을 변경한다.
+
+코드를 실행하면 리스트가 5가 아닌 15를 가지고 있는 것을 알 수 있다.
+
+```
+a after = Cons(RefCell { value: 15 }, Nil)
+b after = Cons(RefCell { value: 6 }, Cons(RefCell { value: 15 }, Nil))
+c after = Cons(RefCell { value: 10 }, Cons(RefCell { value: 15 }, Nil))
+```
