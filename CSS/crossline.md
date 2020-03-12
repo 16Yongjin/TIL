@@ -44,3 +44,5 @@ SVG line 태그로 그린 대각선을 요소의 배경으로 설정한다.
 ```
 
 [결과](https://jsfiddle.net/jmnote/9kcacm8j/?utm_source=website&utm_medium=embed&utm_campaign=9kcacm8j)
+
+`xmlns="http://www.w3.org/2000/svg"` 속성을 추가 안 하면 svg가 그려지지 않는다.

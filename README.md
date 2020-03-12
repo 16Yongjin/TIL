@@ -76,6 +76,7 @@
 ## Linux
 
 - [우분투 Node.js 서버 설정](Linux/우분투-Node.js-서버-설정.md)
+- [인터넷 속도 측정](Linux/internet-speed-test.md)
 - [Sudo Vulnerability](Linux/sudo-vulnerability.md)
 
 ## Rust

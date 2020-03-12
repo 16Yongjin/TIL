@@ -47,4 +47,4 @@ getComputedStyle(element).getPropertyValue("--my-var");
 element.style.setProperty("--my-var", jsVar + 4);
 ```
 
-전역적으로 CSS 변수를 바꾸려면 접근하려면 `document.documentElement`의 `style` 프로퍼티를 사용한다.
+전역적으로 CSS 변수를 바꾸려면 접근하려면 `getComputedStyle(document.documentElement)`의 `style` 프로퍼티를 사용한다.
