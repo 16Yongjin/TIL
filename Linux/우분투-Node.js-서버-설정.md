@@ -56,6 +56,32 @@ curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 sudo apt-get install nodejs
 ```
 
+## postgres 설정
+
+설치
+
+```
+sudo apt-get update
+sudo apt-get install postgresql postgresql-contrib -y
+```
+
+생성된 postgres 계정 접속 후, DB 생성과 DB 이름과 동일한 계정 생성
+
+```
+sudo -i -u postgres
+createdb alarm
+sudo adduser alarm
+```
+
+## postgres 비번 변경
+
+```
+sudo -u postgres psql
+
+ALTER USER postgres PASSWORD 'postgres';
+
+```
+
 ## SCP로 `id_rsa.pub` 옮기기
 
 ```
@@ -109,4 +135,25 @@ sudo apt-get update
 sudo apt-get install certbot python-certbot-nginx
 
 sudo certbot --nginx
+```
+
+## unable to resolve host 에러 시
+
+`/etc/hostname`으로 장치이름 알아내기
+
+`/etc/hosts` 파일 아래와 같이 수정하기
+
+```
+ 127.0.0.1    localhost.localdomain localhost
+ 127.0.1.1    my-machine
+```
+
+## ssh 터널링
+
+ssh -L [로컬에서 사용할 포트]:[최종적으로 접근할 곳][ssh server 주소]
+
+ex:
+
+```
+ssh -L 8585:127.0.0.1:80 192.168.1.201
 ```
