@@ -157,3 +157,11 @@ ex:
 ```
 ssh -L 8585:127.0.0.1:80 192.168.1.201
 ```
+
+## redis 설치
+
+```
+sudo apt-get install redis-server
+
+sudo systemctl enable redis-server.service
+```
