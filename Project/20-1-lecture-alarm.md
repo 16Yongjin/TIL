@@ -14,7 +14,7 @@
 
 ### 1. 서버에 신경을 많이 썼다.
 
-저번에 숙련도가 떨어지는 스칼라로 서버를 만들었다가 버그로 변경기간 5일 중 4일동안 서비스가 정지됐다.
+저번에 숙련도가 떨어지는 스칼라로 서버를 만들었다가 버그로 변경기간 5일 중 4일 동안 서비스가 정지됐다.
 
 그래서 잘 알고 있는 Node.js를 사용했고, 서버 이상 파악을 위해 **모니터링 대시보드**도 만들었다.
 
@@ -104,7 +104,7 @@ User.createQueryBuilder()
 
 1. setTimeout이나 setInterval을 사용하고
 2. 시간 관련 로직을 짜고
-3. 시작/정지를 위해 요상한 객체를 만들었었다.
+3. 시작/정지를 위해 커스텀 객체를 만들었었다.
 
 이번에는 `CronJob` 라이브러리에 `*/3 * 10-16 * * *` 인자 하나를 넣음으로 모든 요구 사항을 충족했다.
 
@@ -130,6 +130,8 @@ User.createQueryBuilder()
 
 한 번 설정해놓으면 배포가 알아서 되니, 개발에만 집중할 수 있었다.
 
+&nbsp;
+
 # [Android App by Flutter](https://github.com/16Yongjin/20-1-lecture-alarm-flutter)
 
 ![Screenshot_2020-03-20-20-35-09-875_com google android apps playconsole](https://user-images.githubusercontent.com/22253556/77160536-e24fe600-6aea-11ea-8dc7-46e39795c09f.jpg)
@@ -144,7 +146,7 @@ User.createQueryBuilder()
 
 ## 위젯을 쪼개고 또 쪼개고
 
-위젯의 `build` 메서드에는 최대한 위젯의 문법 강조 색인 초록색만 보이게 했다.
+위젯의 `build` 메서드에는 위젯의 문법 강조 색인 초록색만 최대한 보이게 했다.
 
 ![image](https://user-images.githubusercontent.com/22253556/77160974-e6c8ce80-6aeb-11ea-978f-4a94d7441338.png)
 
@@ -194,13 +196,13 @@ User.createQueryBuilder()
 
 숨겨져있는 버튼을 길게 누르고 있으면 입력 창이 뜬다.
 
-여기에 "포어과"를 입력하면 광고를 보지 않아도 알람을 7개를 추가할 수 있다.
+여기에 "포어과"를 입력하면 광고를 보지 않아도 알람 추가 개수를 7개로 늘릴 수 있다.
 
 ## 검색 기능 추가
 
 ![KakaoTalk_20200315_185857858_06](https://user-images.githubusercontent.com/22253556/77163232-fa2a6880-6af0-11ea-920d-3c3e8672953c.jpg)
 
-힘들게 추가했지만 1000번 이상의 강의 찾기 중, 34번만 검색이 사용되었다.
+힘들게 추가했지만 1000번 이상의 강의 찾기 요청 중, 34번만 검색이 사용되었다.
 
 검색 아이콘으로는 검색 기능 존재를 설명하기는 부족한가보다.
 
@@ -214,12 +216,154 @@ User.createQueryBuilder()
 
 <center>앱 업데이트 후 수정된 리뷰 ㅋㅋ</center>
 
+&nbsp;
+
 # [Web App By Svelte](https://github.com/16Yongjin/20-1-lecture-alarm-svelte)
 
 ## 라이브러리 코드를 직접 수정하지 말자
 
-아..
+저번 버전에서 `svelte-notification` 라이브러리에 테마 기능을 넣기 위해 라이브러리 코드를 직접 수정했었다.
+
+코드 수정한 것을 까먹고 `Svelte` 버전 업그레이드를 위해 `node_modules`를 지우고 다시 설치했다.
+
+원래의 기능을 원상복구하느라 고생했다.
+
+## 검색 쿼리 디바운싱
+
+코드 8줄로 300ms 디바운싱을 구현했다.
+
+사용자는 검색하기 버튼을 누를 필요도 없이 강의를 찾을 수 있다.
+
+```javascript
+let timer;
+
+const debounceQuery = query => {
+  clearTimeout(timer);
+  timer = setTimeout(async () => {
+    if (!query) return;
+    lectures = await serverApi.searchLectures(query);
+  }, 300);
+};
+```
+
+&nbsp;
 
 # [Dashboard](https://github.com/16Yongjin/20-1-lecture-alarm-dashboard)
 
 ![dashboard-screenshot](https://user-images.githubusercontent.com/22253556/77064355-b1a47980-6a22-11ea-8696-238b8e949667.png)
+
+대시보드로 서비스 작동을 한눈에 알 수 있다.
+
+## 표시하는 정보
+
+### 1. Insight
+
+서비스 정상 작동을 확인할 수 있는 수치
+
+유저수, 알람수, 학과수, 완료된 알람수, 유저 당 알람수
+
+### 2. Server
+
+서버 기계 자체의 상태를 확인할 수 있는 자료
+
+- 서버 상태
+- 서버 일반 로그
+- 완료된 알람 로그
+
+## 정보 업데이트
+
+3초마다 서버에서 정보를 가져와서 대시보드를 업데이트 한다.
+
+차트를 다시 그리기 위해 데이터셋의 값을 설정하고, `update` 메서드를 호출한다.
+
+## 로그 정보 스트리밍
+
+로그 정보는 서버에서 `Socket.io`로 실시간으로 가져온다.
+
+## 서버 상태
+
+[express-status-monitor](https://github.com/RafalWilinski/express-status-monitor)로 서버 상태를 확인했다.
+
+모니터 라이브러리가 내부적으로 `Socket.io`를 사용하고 있어서, 내가 만든 소켓과 충돌이 났었다.
+
+다행히 모니터 미들웨어 생성 시 `websocket`을 인자로 넣을 수 있었다.
+
+문제는, 모니터 미들웨어는 가장 앞에서 `express` 인스턴스에 적용돼야 하는데
+
+필요한 소켓 인자는 가장 뒤인 `http` 서버 생성 후 만들어진다.
+
+이 종속성을 해결하기 위해, 소켓을 전역적으로 접근할 수 있는 모듈을 파일로 만들었다.
+
+그리고 테스트 시 소켓을 만들 수 없기 때문에, `production` 모드일 때만 모니터 미들웨어가 적용되게 했다.
+
+## Grid Layout
+
+`grid-template-areas`로 복잡한 레이아웃을 쉽게 잡았다.
+
+데스크탑에서 모바일로 레이아웃을 변경할 떄,
+
+```javascript
+"user-count alarm-count course-count completed-alarm-count checker-running";
+"lecture-rank course-rank course-rank alarms-per-user alarms-per-user";
+```
+
+위의 `grid-template-areas`를
+
+```javascript
+"user-count alarm-count";
+"course-count completed-alarm-count";
+"checker-running  checker-running";
+"lecture-rank lecture-rank";
+"course-rank course-rank";
+"alarms-per-user alarms-per-user";
+```
+
+위와 같이 바꾸고 로우, 칼럼 길이만 조금 수정하면되니 정말 편하다.
+
+&nbsp;
+
+# SMS 알람 서비스
+
+아이폰에도 알람 서비스를 제공하기 위해 SMS를 알람 채널로 사용했다.
+
+## 문자 인증 추가
+
+문자 인증을 통해 잘못된 전화번호로 알람이 가는 문제를 막았다.
+
+발신번호가 내 번호로 되어있기 때문에 모르는 사람한테 알람이 가서 나한테 연락이 오는 경우를 생각하면 아찔하다.
+
+그래서 문자 인증 기능을 재빨리 추가했다.
+
+## 인증번호 저장
+
+인증번호를 DB에 저장하는 것은 너무 복잡하고, 직접 메모리에서 관리하는 것은 귀찮다.
+
+인증번호 저장은 `Redis`를 사용했다.
+
+`SETEX` 함수로 5분 뒤에 인증번호가 사라지게 했다.
+
+## 단점
+
+문자 방식은 기기 제한은 없지만 느리다.
+
+FCM은 보낸 후 1초면 오는데, 문자는 받는데 5초 정도 걸린다.
+
+그냥 아이폰 버전을 만드는 게 맞는 것 같다.
+
+&nbsp;
+
+# 마무리
+
+## 1. 다음 학기엔 꼭 아이폰 버전 만들어야겠다.
+
+- 앱 스토어에 도전한다.
+
+## 2. 유저를 더 생각하자
+
+아이콘 하나로 내 의도를 이해시키엔 부족하다.
+
+사용 설명서 제대로 작성해자.
+
+## 3. 광고는 노출의 질보단 양
+
+UI흐름을 막고, 돈도 제대로 안 주는 리워드 영상 광고는 빼고 작은 배너 광고 하나만 사용하자.
