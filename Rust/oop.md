@@ -108,7 +108,7 @@ impl AveragedCollection {
 
 상속이 있는 언어는 `draw` 메서드를 가진 `Component` 클래스를 만든다.
 
-요소들이 이를 상속받아 `draw`메서드를 오버라이딩해서 각각의 고유 동작을 정의한다.
+요소들이 이를 상속받아 `draw` 메서드를 오버라이딩해서 각각의 고유 동작을 정의한다.
 
 라이브러리는 모든 요소를 `Component`로 다루고 `draw` 메서드를 호출하기만 한다.
 
@@ -520,4 +520,103 @@ impl State for Published {
 
 또한, 로직도 중복된다.
 
-## 상태와 동작을 타입처럼 인코딩하기
+## 상태와 동작을 타입으로 인코딩하기
+
+각 상태를 다른 타입들로 표현할 수 있다.
+
+이 방식은 러스트의 타입 검사 시스템을 이용할 수 있다는 장점이 있다.
+
+```rust
+pub struct Post {
+    content: String,
+}
+
+pub struct DraftPost {
+    content: String,
+}
+
+impl Post {
+    pub fn new() -> DraftPost {
+        DraftPost {
+            content: String::new(),
+        }
+    }
+
+    pub fn content(&self) -> &str {
+        &self.content
+    }
+}
+
+impl DraftPost {
+    pub fn add_text(&mut self, text: &str) {
+        self.content.push_str(text);
+    }
+}
+```
+
+`Post`와 `DraftPost`는 더이상 `state` 필드를 갖지 않는다.
+
+상태가 구조체 그 자체이기 때문이다.
+
+`Post::new` 함수는 `DraftPost` 인스턴스를 반환한다.
+
+`DraftPost`에 `add_text` 함수로 글을 추가할 수 있지만, `content` 메서드가 없어서 실수로 출력될 일을 원천봉쇄한다.
+
+## 상태 이전 대신 다른 타입으로 전환하기
+
+```rust
+impl DraftPost {
+    // --snip--
+
+    pub fn request_review(self) -> PendingReviewPost {
+        PendingReviewPost {
+            content: self.content,
+        }
+    }
+}
+
+pub struct PendingReviewPost {
+    content: String,
+}
+
+impl PendingReviewPost {
+    pub fn approve(self) -> Post {
+        Post {
+            content: self.content,
+        }
+    }
+}
+```
+
+`DraftPost`는 `request_review` 메서드 호출로 자신의 내용을 담은 `PendingReviewPost`를 반환한다.
+
+`PendingReviewPost` 또한 `content` 메서드가 없어서 내용을 읽으려는 시도도 할 수 없다.
+
+`approve` 메서드 호출을 통해서만 내용을 확인할 수 있는 `Post` 인스턴스를 얻을 수 있다.
+
+## `blog` 크레이트를 사용하는 `main` 변경
+
+```rust
+extern crate blog;
+use blog::Post;
+
+fn main() {
+    let mut post = Post::new();
+
+    post.add_text("I ate a salad for lunch today");
+
+    let post = post.request_review();
+
+    let post = post.approve();
+
+    assert_eq!("I ate a salad for lunch today", post.content());
+}
+```
+
+메서드들이 내부를 변경하는 대신, 새로운 인스턴스를 반환하기 때문에, `let post =`를 사용한다.
+
+## 정리
+
+러스트에서는 코드에 유연성을 주는 객체 지향 패턴을 사용할 수 있다.
+
+하지만, 객체 지향 패턴 사용으로 러스트가 주는 이점을 잃을 수도 있어서 상황에 맞게 코드를 작성해야 한다.
