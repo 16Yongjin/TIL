@@ -108,6 +108,7 @@
 - [객체 지향](Rust/oop.md)
 - [패턴 매칭](Rust/pattern-matching.md)
 - [unsafe](Rust/unsafe.md)
+- [고급 트레잇](Rust/advanced-traits.md)
 
 ## Project
 
