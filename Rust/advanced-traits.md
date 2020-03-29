@@ -1,12 +1,14 @@
 # 고급 트레잇
 
+연관 타입, 기본 제네릭 타입 파라미터, 완전 정규화 문법, 슈퍼 트레잇, 뉴타입 패턴
+
 ## 연관 타입
 
 연관 타입은 타입 플레이스홀더와 트레잇을 연결한다.
 
 트레잇 메서드 정의에 플레이스홀더 타입을 사용할 수 있다.
 
-`Iterator` 트레잇을 정의할 떄 사용했던 `Item`이 연관 타입이다.
+`Iterator` 트레잇을 정의할 때 사용했던 `Item`이 연관 타입이다.
 
 ```rust
 pub trait Iterator {
@@ -17,7 +19,7 @@ pub trait Iterator {
 
 `Iterator` 구현 시 `Item`의 구체적인 타입이 명시될 것이고
 
-`next` 메서드는 `Item`가 나타내는 구체 타입의 옵션값을 반환할 것이다.
+`next` 메서드는 `Item`이 나타내는 구체 타입의 옵션값을 반환할 것이다.
 
 ## 연관 타입 vs. 제네릭
 
@@ -47,9 +49,9 @@ pub trait Iterator<T> {
 
 `Iterator<String> for Counter`, `Iterator<Point> for Counter`, ..
 
-연관 타입을 이용하면 `Item`의 타입을 한번만 명시할 수 있다.
+연관 타입을 이용하면 `Item`의 타입을 한 번만 명시할 수 있다.
 
-`impl Iterator for Counter`은 한번만 쓸 수 있기 때문이다.
+`impl Iterator for Counter`은 한 번만 쓸 수 있기 때문이다.
 
 ## 기본 제네릭 타입 파라미터와 연산자 오버로딩
 
@@ -263,6 +265,106 @@ fn main() {
 
 함수나 메서드를 호출하는 모든 곳에서 완전 정규화 문법을 사용할 수 있지만, 러스트는 알아낼 수 있는 부분에서는 생략할 수 있다.
 
-## 슈퍼트레잇 (supertrait) 을 사용하여 어떤 트레잇 내에서 다른 트레잇의 기능 요구하기
+## 슈퍼트레잇(supertrait)으로 어떤 트레잇 내에서 다른 트레잇의 기능 요구하기
 
-## 외부 타입에 대해 외부 트레잇을 구현하기 위한 뉴타입 패턴 (newtype pattern)
+트레잇 구현자에게 다른 트레잇의 종속성 강제할 수 있다.
+
+값을 `*`로 감싸서 출력하는 `outline_print` 메서드를 가진 `OutlinePrint` 트레잇을 구현해본다.
+
+`Display`를 구현해서 `(x, y)`를 출력하는 `Point` 구조체가 있을 때,
+
+`Point` 인스턴스에 `outline_print` 메서드 호출 시 다음과 같이 출력돼야 한다.
+
+```
+**********
+*        *
+* (1, 3) *
+*        *
+**********
+```
+
+`OutlinePrint` 구현 시 `Display`의 기능이 필요하다는 것을 명시해야 한다.
+
+```rust
+use std::fmt;
+
+trait OutlinePrint: fmt::Display {
+    fn outline_print(&self) {
+        let output = self.to_string();
+        let len = output.len();
+        println!("{}", "*".repeat(len + 4));
+        println!("*{}*", " ".repeat(len + 2));
+        println!("* {} *", output);
+        println!("*{}*", " ".repeat(len + 2));
+        println!("{}", "*".repeat(len + 4));
+    }
+}
+```
+
+위와 같이, 트레잇을 정의할 때 `OutlinePrint: Display`라고 명시한다.
+
+트레잇에 트레잇 바운드를 추가하는 것 같다.
+
+`self`가 `Display` 트레잇을 구현하도록 강제됐기 때문에, `self`의 `to_string` 메서드를 호출할 수 있다.
+
+아래와 같이 `Display`를 구현하지 않은 타입이 `OutlinePrint`를 구현하면 `` the trait bound `Point: std::fmt::Display` is not satisfied `` 에러가 발생한다.
+
+```rust
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+impl OutlinePrint for Point {}
+```
+
+아래와 같이 `Point`에 `Display`를 구현해서 `OutlinePrint`의 요구사항을 만족시키면 에러를 없앨 수 있다.
+
+```rust
+use std::fmt;
+
+impl fmt::Display for Point {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "({}, {})", self.x, self.y)
+    }
+}
+```
+
+## 외부 타입에 대해 외부 트레잇을 구현하기 위한 뉴타입 패턴
+
+트레잇을 구현하려면 타입이나 트레잇 둘 중 하나가 내 크레이트 안에 있어야 하는 고아 규칙을 따라야 한다.
+
+고아 규칙을 우회하려면 뉴타입 패턴(newtype pattern)을 사용하면 된다.
+
+뉴타입 패턴은 트레잇을 구현하려는 타입을 튜플로 감싸서 내 크레이트 내에 있게한다.
+
+`Vec` 타입에 `Display` 트레잇을 구현하려고 하면, 둘 다 내 크레이트 외부에 정의되어 있어서 고아 규칙에 걸려 구현을 할 수가 없다.
+
+`Vec`을 감싸는 `Wrapper` 구조체를 만들고, `Wrapper`에 `Display`를 구현하면 `Vec` 값을 이용할 수 있다.
+
+```rust
+use std::fmt;
+
+struct Wrapper(Vec<String>);
+
+impl fmt::Display for Wrapper {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "[{}]", self.0.join(", "))
+    }
+}
+
+fn main() {
+    let w = Wrapper(vec![String::from("hello"), String::from("world")]);
+    println!("w = {}", w);
+}
+```
+
+`self.0`으로 `Vec`에 접근한다.
+
+## 뉴타입 패턴의 단점
+
+`Wrapper`가 새로운 타입이므로, 내부 값의 메서드를 사용할 수 없다.
+
+`Wrapper`가 `Vec`처럼 사용되려면, `Wrapper` 상에 `Vec` 메서드를 모두 직접 구현하고 이를 `self.0`에 위임해야 한다.
+
+또는, `Wrapper`에 `Deref` 트레잇을 구현해서 내부 타입이 가진 메서드를 `Wrapper`에서 사용할 수 있게 한다.
