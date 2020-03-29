@@ -285,6 +285,10 @@ fn main() {
 
 `OutlinePrint` 구현 시 `Display`의 기능이 필요하다는 것을 명시해야 한다.
 
+아래와 같이 트레잇 정의 시 `OutlinePrint: Display`라고 명시한다.
+
+트레잇에 트레잇 바운드를 추가하는 것 같다.
+
 ```rust
 use std::fmt;
 
@@ -300,10 +304,6 @@ trait OutlinePrint: fmt::Display {
     }
 }
 ```
-
-위와 같이, 트레잇을 정의할 때 `OutlinePrint: Display`라고 명시한다.
-
-트레잇에 트레잇 바운드를 추가하는 것 같다.
 
 `self`가 `Display` 트레잇을 구현하도록 강제됐기 때문에, `self`의 `to_string` 메서드를 호출할 수 있다.
 
