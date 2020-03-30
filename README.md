@@ -109,6 +109,7 @@
 - [패턴 매칭](Rust/pattern-matching.md)
 - [unsafe](Rust/unsafe.md)
 - [고급 트레잇](Rust/advanced-traits.md)
+- [고급 타입](Rust/advanced-types.md)
 
 ## Project
 
