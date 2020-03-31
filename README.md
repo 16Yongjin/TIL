@@ -110,6 +110,7 @@
 - [unsafe](Rust/unsafe.md)
 - [고급 트레잇](Rust/advanced-traits.md)
 - [고급 타입](Rust/advanced-types.md)
+- [고급 함수와 클로저](Rust/advanced-functions-and-closures.md)
 
 ## Project
 
