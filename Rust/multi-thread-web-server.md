@@ -2,7 +2,7 @@
 
 ## 싱글 스레드 기반 웹서버 만들기
 
-TCP를 이용한 바이트통신과 HTTP를 이용한 요청과 응답 주고 받기
+TCP를 이용한 바이트통신과 HTTP를 이용한 요청과 응답 주고받기
 
 ```rust
 use std::fs::File;
@@ -52,7 +52,7 @@ fn handle_connection(mut stream: TcpStream) {
 
 ## 요청 데이터 읽기
 
-`handle_connection`함수로 스트림을 인자로 받아 요청을 처리한다.
+`handle_connection` 함수로 스트림을 인자로 받아 요청을 처리한다.
 
 `TcpStream`은 내부에서 반환되는 데이터를 추적하므로 `stream` 매개변수를 가변으로 받는다.
 
@@ -211,4 +211,183 @@ pub struct ThreadPool {
 
 ## 채널을 통해 스레드에 요청 보내기
 
+1. `TheadPool`은 채널을 생성하고 채널 송신자를 가진다.
+2. `Worker`는 채널의 수신자를 가진다.
+3. `execute` 메서드 호출 시 채널의 송신자로 작업을 전송한다.
+4. 스레드 안에서 `Worker`에서 받은 작업을 실행한다.
+
+`ThreadPool::new`에서 새 채널을 만든다.
+
+```rust
+let (sender, receiver) = mpsc::channel();
+```
+
+`sender`는 `ThreadPool` 구조체 필드 내에 저장한다.
+
+`receiver`를 `Arc<Mutex<T>>`로 감싸서 각 `Worker` 구조체에 보내고 여러 스레드가 공유할 수 있게 한다.
+
+`Arc` 덕분에 여러 스레드가 하나의 수신자를 공유할 수 있고,
+
+`Mutex` 덕분에 한번에 하나의 `Worker`가 `receiver`에서 작업을 가져가도록 한다.
+
+```rust
+workers.push(Worker::new(id, Arc::clone(&receiver)));
+```
+
 ## `execute` 메소드 구현
+
+```rust
+trait FnBox {
+    fn call_box(self: Box<Self>);
+}
+
+impl<F: FnOnce()> FnBox for F {
+    fn call_box(self: Box<F>) {
+        (*self)()
+    }
+}
+
+type Job = Box<FnBox + Send + 'static>;
+
+pub fn execute<F>(&self, f: F)
+        where
+            F: FnOnce() + Send + 'static
+    {
+        let job = Box::new(f);
+
+        self.sender.send(job).unwrap();
+    }
+```
+
+클로저를 `Box<T>`에 담아서 보낸 뒤, 박스를 벗기고 호출해야 한다.
+
+하지만, 러스트는 `Box<T>` 안의 값의 크기를 알 수 없으므로 박스 안의 값을 옮기는 것을 허용하지 않는다.
+
+`Box<T>` 에 저장된 `Self` 값의 소유권을 다룰 수 있도록 `self: Box<Self>` 를 사용하는 `FnBox` 트레잇을 정의했다.
+
+`call_box` 메서드는 `(*self)()`를 사용하여 클로저를`Box<T>` 밖으로 빼내고 호출한다.
+
+```rust
+impl Worker {
+    fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Job>>>) -> Worker {
+        let thread = thread::spawn(move || {
+            loop {
+                let job = receiver.lock().unwrap().recv().unwrap();
+
+                println!("Worker {} got a job; executing.", id);
+
+                job.call_box();
+            }
+        });
+
+        Worker {
+            id,
+            thread,
+        }
+    }
+}
+```
+
+# 우아한 종료와 정리
+
+스레드가 종료되기 전에 처리하던 요청을 마저 처리하도록 `ThreadPool`에 `Drop` 트레잇을 구현한다.
+
+또한, 스레드에 새로운 요청을 그만 받고 종료하라는 메시지를 받게 한다.
+
+## `ThreadPool` 에 `Drop` 트레잇 구현하기
+
+```rust
+struct Worker {
+    id: usize,
+    thread: Option<thread::JoinHandle<()>>,
+}
+
+
+impl Drop for ThreadPool {
+    fn drop(&mut self) {
+        for worker in &mut self.workers {
+            println!("Shutting down worker {}", worker.id);
+
+            if let Some(thread) = worker.thread.take() {
+                thread.join().unwrap();
+            }
+        }
+    }
+}
+```
+
+`Worker`를 빌리기만 해서 `thread`의 소유권을 빼낼 수가 없기 때문에
+
+`Worker`의 `thread::JoinHandle<()>`을 `Option`으로 감싼다.
+
+`Option`의 `take` 메서드로 `Some` 내부 값은 빼내고, 옵션을 `None` 값으로 바꿀 수 있다.
+
+## 스레드가 작업 리스닝을 중지하도록 신호하기
+
+```rust
+enum Message {
+    NewJob(Job),
+    Terminate,
+}
+```
+
+`Worker`가 종료 신호도 받을 수 있도록 `Job` 대신 `Message`를 사용한다.
+
+`Worker::new`의 일부분을 다음과 같이 수정한다.
+
+```rust
+let thread = thread::spawn(move ||{
+    loop {
+        let message = receiver.lock().unwrap().recv().unwrap();
+
+        match message {
+            Message::NewJob(job) => {
+                println!("Worker {} got a job; executing.", id);
+
+                job.call_box();
+            },
+            Message::Terminate => {
+                println!("Worker {} was told to terminate.", id);
+
+                break;
+            },
+        }
+    }
+});
+```
+
+`execute` 메서드로 `Message`를 보내면
+
+`Worker`는 `Message`를 받아서 `NewJob`인 경우 작업을 실행하고,
+
+`Terminate`인 경우 작업 신호에 대기하고 있던 루프에서 벗어나서 스레드를 종료한다.
+
+`Drop` 트레잇 구현은 다음과 같이 수정한다.
+
+```rust
+impl Drop for ThreadPool {
+    fn drop(&mut self) {
+        println!("Sending terminate message to all workers.");
+
+        for _ in &mut self.workers {
+            self.sender.send(Message::Terminate).unwrap();
+        }
+
+        println!("Shutting down all workers.");
+
+        for worker in &mut self.workers {
+            println!("Shutting down worker {}", worker.id);
+
+            if let Some(thread) = worker.thread.take() {
+                thread.join().unwrap();
+            }
+        }
+    }
+}
+```
+
+워커들을 두 번 순회해서 한번은 `Terminate` 메시지를 보내고, 한번은 스레드에 `join`을 호출한다.
+
+메시지 전송과 `join` 호출을 한번에 하면, 일부 스레드가 일하느라 메시지를 못 받는 경우, 다른 스레드가 이 메시지를 채간다.
+
+메시지를 못받은 스레드는 영원히 종료되지 않고 교착상태에 빠진다.
