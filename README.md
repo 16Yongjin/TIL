@@ -14,8 +14,9 @@
   <!-- * [Database](#database) -->
 - [Javascript](#javascript)
 - [Linux](#linux)
-- [Rust](#rust)
+- [OS]](#os)
 - [Project](#project)
+- [Rust](#rust)
 - [Ideas](#ideas)
 - [Software](#software)
 - [SpringBoot](#SpringBoot)
@@ -31,6 +32,7 @@
 
 - [HTML 대각선 그리기](CSS/crossline.md)
 - [CSS Variable](CSS/css-variables.md)
+- [수평 스크롤](CSS/horizontal-scroll.md)
 
 ## DataStructure
 
@@ -79,6 +81,10 @@
 - [인터넷 속도 측정](Linux/internet-speed-test.md)
 - [Sudo Vulnerability](Linux/sudo-vulnerability.md)
 
+## OS
+
+- [A Freestanding Rust Binary](OS/A-Freestanding-Rust-Binary.md)
+
 ## Rust
 
 - [WSL 설정](Rust/wsl-setup.md)
@@ -111,6 +117,7 @@
 - [고급 트레잇](Rust/advanced-traits.md)
 - [고급 타입](Rust/advanced-types.md)
 - [고급 함수와 클로저](Rust/advanced-functions-and-closures.md)
+- [멀티 스레딩 웹서버](Rust/multi-thread-web-server.md)
 
 ## Project
 
