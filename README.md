@@ -83,7 +83,8 @@
 
 ## OS
 
-- [A Freestanding Rust Binary](OS/A-Freestanding-Rust-Binary.md)
+- [독립적인 러스트 바이너리](OS/A-Freestanding-Rust-Binary.md)
+- [아주 작은 러스트 커널](OS/A-Minimal-Rust-Kernel.md)
 
 ## Rust
 
