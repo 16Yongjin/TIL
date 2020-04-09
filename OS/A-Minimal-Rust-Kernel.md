@@ -185,4 +185,4 @@ qemu-system-x86_64 -drive format=raw,file=bootimage-blog_os.bin
 
 그러면 다음과 같은 감격스러운 화면이 나온다.
 
-![qemu-hello-world]](https://user-images.githubusercontent.com/22253556/78552910-51477180-7843-11ea-844f-5f70a2a57e03.png)
+![qemu-hello-world](https://user-images.githubusercontent.com/22253556/78552910-51477180-7843-11ea-844f-5f70a2a57e03.png)
