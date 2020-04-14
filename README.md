@@ -85,6 +85,7 @@
 
 - [독립적인 러스트 바이너리](OS/A-Freestanding-Rust-Binary.md)
 - [아주 작은 러스트 커널](OS/A-Minimal-Rust-Kernel.md)
+- [VGA 택스트 모드](OS/VGA-Text-Mode.md)
 
 ## Rust
 
@@ -127,6 +128,7 @@
 ## Ideas
 
 - [죽을 때까지 프로그래머로 사는 법](Ideas/죽을-때까지-프로그래머로-사는-법.md)
+- [활성 유저 확인법](Ideas/check-live-user.md)
 - [etc](Ideas/etc.md)
 - [나중에 볼 것](Ideas/Watch-Later.md)
 
