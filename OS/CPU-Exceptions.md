@@ -8,11 +8,11 @@ CPU 예외는 잘못된 메모리 접근이나 0으로 나누기 같은 에러 �
 
 ## 개요
 
-현재 실행 중인 명령어에 문제가 있으면 예외 신호가 발생한다. (ex, 0으로 나누기) 예외 발생 시, CPU는 하고 있는 작업을 멈추고 예외에 맞는 처리함수를 즉시 호출한다.
+현재 실행 중인 명령어에 문제가 있으면 예외 신호가 발생한다. (ex, 0으로 나누기) 예외 발생 시, CPU는 하고있는 작업을 멈추고 예외에 맞는 처리함수를 즉시 호출한다.
 
 x86에는 CPU 예외가 20개 정도 있는데, 다음에 나오는 것들이 가장 중요하다.
 
-- 페이지 폴트: 메모리에 잘못 접근하면 발생한다. 현재 명령어가 매핑되지 않은 페이지를 읽거나 읽기 전용 페이지를 읽을려고 할 때 발생한다.
+- 페이지 폴트: 메모리에 잘못 접근하면 발생한다. 현재 명령어가 매핑되지 않은 페이지를 읽거나 읽기 전용 페이지를 읽으려고 할 때 발생한다.
 
 - 유효하지 않은 Opcode: 잘못된 명령어 실행 시 발생한다. 새 SSE 명령어를 지원되지 않는 오래된 CPU에 사용했을 때 발생한다.
 
@@ -123,13 +123,13 @@ x86_64 리눅스에서는 다음과 같은 규칙이 C 함수에 적용된다.
 - 추가 인자는 스택으로 넘겨진다.
 - 결과값은 `rax`와 `rdx`에 반환된다.
 
-러스트는 C ABI를 따르지 않으므로 위 규칙은 `extern "C" fn`으로 선언된 함수에만 적용된다.
+러스트는 C ABI를 따르지 않으므로 위 규칙은 `extern "C" fn`으로 선언된 함수에만 적용된다. (사실 러스트는 ABI가 아직 없다.)
 
 ## 보존 레지스터와 스크래치 레지스터
 
 호출 규약으로 레지스터는 보존과 스크래치 레지스터로 나뉘게 된다.
 
-보존 레지스터는 함수 호출에도 값이 변하지 않는다. 그래서 호출되는 함수(callee)는 반환하기 전에 레지스터 값을 원상복구할 수 있을 때만 덮어쓸 수 있다. 그러므로 이 레지스터들은 "callee-saved"라고 부른다. 일반적으로 함수의 시작부에서 이 레지스터를 스택에 저장하고 반환 전에 복구한다.
+보존 레지스터는 함수 호출에도 값이 변하지 않는다. 호출되는 함수(callee)는 반환하기 전에 레지스터 값을 원상복구할 수 있을 때만 덮어쓸 수 있다. 그래서 이 레지스터들은 "callee-saved"라고 부른다. 일반적으로 함수의 시작부에서 이 레지스터를 스택에 저장하고 반환 전에 복구한다.
 
 반대로, 스크래치 레지스터는 호출된 함수가 제한 없이 덮어쓸 수 있다. 호출자가 함수 호출 사이에 스크래치 레지스터의 값을 보존하려면, 함수 호출 전에 값을 백업하고 복구해야 한다.(스택에 값을 집어넣기) 그래서 스크래치 레지스터는 "caller-saved"라고 부룬다.
 
@@ -140,16 +140,16 @@ x86_64의 C 호출 규약은 다음의 보존 레지스터와 스크래치 레�
 | `rbp`, `rbx`, `rsp`, `r12`, `r13`, `r14`, `r15` | `rax`, `rcx`, `rdx`, `rsi`, `rdi`, `r8`, `r9`, `r10`, `r11` |
 | callee-saved                                    | caller-saved                                                |
 
-컴파일러는 이런 규칙에 따라 코드를 생성한다. 예를 들어, 대부분의 함수는 `rbp`를 스택에 백업하는 `push rbp`로 시작한다.
+컴파일러는 이런 규칙에 따라 코드를 생성한다. 예를 들어, 대부분의 함수는 `rbp`를 스택에 백업하는 `push rbp` 명령어로 시작한다.
 
 ## 모든 레지스터를 보존하기
 
-함수 호출과 다르게, 예외는 모든 명령어에서 발생할 수 있다. 대부분의 경우, 컴파일 타임에서는 생성된 코드가 예외를 일으키는지 알 수 없다. 예를 들어, 컴파일러는 어떤 코드가 스택 오버플로나 페이지 폴트를 일으킬 지 모른다.
+함수 호출과 다르게, 예외는 모든 명령어에서 발생할 수 있다. 대부분의 경우, 컴파일 타임에서는 생성된 코드가 예외를 일으키는지 알 수 없다. 예를 들어, 컴파일러는 어떤 코드가 스택 오버플로나 페이지 폴트를 일으킬 지 알 수 없다.
 
 예외가 언제 발생할 지 모르니 사전에 레지스터를 백업할 수도 없다.
 즉, caller-saved 레지스터에 의존하는 호출 규약을 예외 처리에 활용할 수 없다. 대신에, 모든 레지스터를 저장하는 `x86-interrupt` 호출 규약을 사용한다. 이 규약은 함수 반환 시 모든 레지스터의 값이 원래 값으로 복구되도록 한다.
 
-함수 시작 시 스택에 모든 레지스터가 저장되는게 아니라, 컴파일러가 함수에 의해 덮어쓰기된 레지스터만 백업한다. 이 방식으로, 사용하는 레지스터가 적은 짧은 함수로부터 효율적인 코드를 생성할 수 있다.
+함수 시작 시 스택에 모든 레지스터가 저장되는게 아니라, 컴파일러가 함수에 의해 덮어쓰기된 레지스터만 백업한다. 이 방식으로, 사용하는 레지스터가 많지 않은 짧은 함수는 코드를 효율적으로 생성할 수 있다.
 
 ## 인터럽트 스택 프레임
 
@@ -157,13 +157,11 @@ x86_64의 C 호출 규약은 다음의 보존 레지스터와 스크래치 레�
 
 일반적인 함수 호출의 스택 프레임은 다음과 같이 생겼다.
 
-![interrupt stack frame](https://user-images.githubusercontent.com/22253556/79334173-c2310c80-7f5a-11ea-904d-6e30939641b6.png)
+<center><img alt="interrupt stack frame" src="https://user-images.githubusercontent.com/22253556/79334173-c2310c80-7f5a-11ea-904d-6e30939641b6.png" /></center>
 
 한편, 예외와 인터럽트를 처리할 때는 복귀 주소를 스택에 넣는 것만으로는 부족하다. 인터럽트 처리함수는 다른 문맥(스택 포인터, CPU 플래그 등)에서 작동하기 때문이다. 대신에, CPU는 인터럽트 발생 시 다음 절차를 따른다.
 
 1. **스택 포인터 정렬하기**: 어떤 명령어든 인터럽트가 발생할 수 있으므로, 스택 포인터도 어떤 값이든 가질 수 있다. 그런데, CPU 명령어 중에는 CPU가 인터럽트 직후에 정렬을 수행할 수 있도록 스택 포인터가 16 바이트 바운더리에 정렬되기를 요구하는 명령어가 있다.(ex SSE 명령어)
-
-   > 정렬이 뭐하는 건지 모르겠다...
 
 2. **스택 교체** (몇몇 경우에만): CPU 권한 레벨 변경 시 스택 교체가 발생한다. (예를 들어, 유저 모드 프로그램에서 CPU 예외가 발생한 경우) *인터럽트 스택 테이블*을 사용하는 특정 인터럽트를 위해 스택 교체를 설정할 수 있다.
 
@@ -171,7 +169,7 @@ x86_64의 C 호출 규약은 다음의 보존 레지스터와 스크래치 레�
 
 4. **`RFLAGS` 레지스터를 스택에 넣고 갱신하기**: `RFLAGS` 레지스터는 다양한 컨트롤 비트와 상태 비트를 담고 있다. 인터럽트 시작 시, CPU는 몇몇 비트를 바꾸고 옛날 값은 스택에 넣는다.
 
-5. **명령어 포인터를 스택에 넣기**: 인터럽트 처리함수로 점프하기 전에 CPU는 명령어 포인터(`rip`)와 코드 세그먼트(`cs`)를 스택에 넣는다. 일반 함수 호출 시 복구 주소를 스택에 넣는 것과 대비된다.
+5. **명령어 포인터를 스택에 넣기**: 인터럽트 처리함수로 점프하기 전에 CPU는 명령어 포인터(`rip`)와 코드 세그먼트(`cs`)를 스택에 넣는다. 일반 함수 호출 시 복귀 주소를 스택에 넣는 것과 대비된다.
 
 6. **에러 코드 스택에 넣기**(몇몇 예외에만): 페이지 폴트 같은 특정 예외의 경우, CPU는 예외의 원인을 설명하는 에러 코드를 스택에 넣는다.
 
@@ -179,7 +177,7 @@ x86_64의 C 호출 규약은 다음의 보존 레지스터와 스크래치 레�
 
 인터럽트 스택 프레임은 다음과 같이 생겼다.
 
-![interrupt stack frame](https://user-images.githubusercontent.com/22253556/79336421-aa5b8780-7f5e-11ea-9dd9-8e25f6e465d6.png)
+<center><img alt="interrupt stack frame" src="https://user-images.githubusercontent.com/22253556/79336421-aa5b8780-7f5e-11ea-9dd9-8e25f6e465d6.png" /></center>
 
 `x86_64` 크레이트의 인터럽트 스택 프레임은 `InterruptStackFrame` 구조체로 표현된다. 이 구조체는 `&mut`으로 인터럽트 처리함수로 전달되고 예외 발생 원인에 대한 추가 정보를 얻기 위해 사용된다. 에러 코드를 사용하는 예외가 몇 개 없으므로 이 구조체에 에러 코드 필드는 없다. 에러 코드가 필요한 예외는 `error_code` 인자를 가지고 있는 `HandlerFuncWithErrCode` 함수 타입을 따로 사용한다.
 
@@ -194,3 +192,121 @@ x86_64의 C 호출 규약은 다음의 보존 레지스터와 스크래치 레�
 - **에러 코드 처리**: 몇몇 예외에 사용하기 위해 스택에 넣어지는 에러 코드는 처리를 복잡하게 만든다. 에러 코드는 스택 정렬을 바꾸고 복귀 전에 스택에서 제거돼야 한다. `x86-interrupt` 호출 규약이 이 복잡한 과정을 떠맡아준다. 그런데, 호출 규약은 어떤 예외에 어떤 처리함수를 써야하는지 몰라서, 함수 인자의 개수에서 정보를 추론한다. 그래서 각 예외 처리에 알맞은 함수를 고르는 것은 프로그래머의 몫이다. `x86_64` 크레이트에 정의된 `InterruptDescriptorTable` 타입을 사용하면 올바른 함수 타입 사용을 보장할 수 있다.
 
 - **스택 정렬하기**: 16 byte 스택 정렬이 필요한 명령어들이 있다.(특히 SSE 명령어) 예외 발생 시 CPU가 정렬을 해주지만, 몇몇 예외들이 스택에 에러 코드를 넣어서 정렬을 망가뜨리는 경우가 있다. 그런 경우는 `x86-interrupt` 호출 규약이 스택을 재정렬해준다.
+
+## 구현하기
+
+인터럽트 모듈을 담을 `src/interrupts.rs` 파일을 만든다.
+
+`src/lib.rs`에는 모듈 선언을 추가한다.
+
+```rust
+pub mod interrupts;
+```
+
+`InterruptDescriptorTable`를 생성하는 `init_idt` 함수를 선언한다.
+
+```rust
+use x86_64::structures::idt::InterruptDescriptorTable;
+
+pub fn init_idt() {
+    let mut idt = InterruptDescriptorTable::new();
+}
+```
+
+다음으로 중단점(breakpoint) 예외 처리함수를 만든다.
+중단점 예외는 중단점 명령어인 `int3`가 실행되면 임시로 프로그램을 멈춘다. 예외 처리를 테스트하기 매우 적합하다.
+
+중단점 예외는 디버거에서 많이 사용한다. 사용자가 중단점을 설정하면 디버거는 해당 명령어 부분을 `int3` 명령어로 바꿔치기하고 프로그램이 그 줄에 다다르면 CPU가 중단점 예외를 발생시킨다. 사용자가 프로그램 실행을 계속하고 싶을 때, 디버거는 `int3` 명령어를 원래 명령어로 되돌린다.
+
+중단점 명령어가 실행되면 메시지를 출력만 하고 프로그램은 그대로 실행되게 하는 `breakpoint_handler` 함수를 만들고 IDT에 등록한다.
+
+```rust
+use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
+use crate::println;
+
+pub fn init_idt() {
+    let mut idt = InterruptDescriptorTable::new();
+    idt.breakpoint.set_handler_fn(breakpoint_handler);
+}
+
+extern "x86-interrupt" fn breakpoint_handler(
+    stack_frame: &mut InterruptStackFrame)
+{
+    println!("EXCEPTION: BREAKPOINT\n{:#?}", stack_frame);
+}
+```
+
+컴파일러의 `x86-interrupt ABI is experimental and subject to change` 에러는 `lib.rs`에 `#![feature(abi_x86_interrupt)]`를 추가해서 끈다.
+
+## IDT 불러오기
+
+CPU가 인터럽트 디스크립터 테이블을 사용하도록 `lidt` 명령어로 테이블을 불러와야 한다.
+`InterruptDescriptorTable` 구조체의 `load` 메서드를 사용하면 된다.
+
+```rust
+pub fn init_idt() {
+    let mut idt = InterruptDescriptorTable::new();
+    idt.breakpoint.set_handler_fn(breakpoint_handler);
+    idt.load();
+}
+```
+
+컴파일 시 `` `idt` does not live long enough ``에러가 발생한다. `load` 메서드는 `&'static self`를 필요로 하는데 다른 IDT를 불러오기 전까지 CPU는 항상 같은 IDT 테이블에 접근하기 때문이다.
+
+`idt`에 `'static` 라이프타임을 설정하는 방법은 여러가지 있다.
+
+1. `Box`를 사용해 IDT를 힙에 넣기: 커널은 아직 힙이 없어서 X
+2. `static`으로 선언하기: `static`은 불변이기에 중단점 시작 변경이 불가능해서 X
+3. `static mut` 사용하기: 데이터 레이스 발생 가능, 접근할 때마다 `unsafe` 블록 사용필요해서 X
+4. `lazy_static!` 메크로 사용하기 O
+
+```rust
+use lazy_static::lazy_static;
+
+lazy_static! {
+    static ref IDT: InterruptDescriptorTable = {
+        let mut idt = InterruptDescriptorTable::new();
+        idt.breakpoint.set_handler_fn(breakpoint_handler);
+        idt
+    };
+}
+
+pub fn init_idt() {
+    IDT.load();
+}
+```
+
+## 실행하기
+
+`lib.rs`에 IDT를 초기화하는 `init` 함수를 만든다.
+
+```rust
+pub fn init() {
+    interrupts::init_idt();
+}
+```
+
+`main.rs`의 `_start` 함수에 `init` 함수를 호출하고 중단점 예외를 던진다.
+
+```rust
+#[no_mangle]
+pub extern "C" fn _start() -> ! {
+    println!("Hello World{}", "!");
+
+    blog_os::init(); // new
+
+    // invoke a breakpoint exception
+    x86_64::instructions::interrupts::int3(); // new
+
+    // as before
+    #[cfg(test)]
+    test_main();
+
+    println!("It did not crash!");
+    loop {}
+}
+```
+
+![image](https://user-images.githubusercontent.com/22253556/79566839-2d5f1800-80ee-11ea-8543-58b694584846.png)
+
+CPU가 중단점 예외 처리함수를 실행한 덕분에 예외 메시지를 출력한 다음, 다시 `_start` 함수로 돌아와서 `It did not crash!`를 출력했다.
