@@ -86,7 +86,8 @@
 - [독립적인 러스트 바이너리](OS/A-Freestanding-Rust-Binary.md)
 - [아주 작은 러스트 커널](OS/A-Minimal-Rust-Kernel.md)
 - [VGA 택스트 모드](OS/VGA-Text-Mode.md)
-- [CPU 예외](OS/CPU-Exceptions.md)
+- [CPU 예외처리](OS/CPU-Exceptions.md)
+- [더블 폴트](OS/Double-Faults.md)
 
 ## Rust
 
