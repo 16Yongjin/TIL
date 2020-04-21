@@ -176,4 +176,55 @@ struct InterruptStackTable {
 
 인터럽트 스택 테이블(IST)는 작업 상태 세그먼트(TSS)라는 오래된 레거시 구조의 일부분이다. TSS는 32비트 모드의 작업에 대한 여러가지 정보(ex, 프로세서 레지스터 상태)를 담고 있고 하드웨어 컨택스트 스위칭에도 사용되곤 했다. 그런데 하드웨어 컨택스트 스위칭이 64비트 모드에서 더이상 지원되지 않아서 TSS의 형식은 완전히 변경됐다.
 
-x86_64의 TSS는 작업 관련된 정보를 더 이상 담지 않는다. 대신에, 두 개의 스택 테이블(그 중하나는 IST)을 담는다. 32비트와 64비트 TSS사이의 유일한 공통점은 I/O 포트 권한 비트맵이다.
+x86_64의 TSS는 작업 관련된 정보를 더 이상 담지 않는다. 대신에, 두 개의 스택 테이블(그 중하나는 IST)을 담는다. 32비트와 64비트 TSS사이의 유일한 공통점은 *I/O 포트 권한 비트맵*이다.
+
+64비트 TSS는 다음의 형식을 갖는다.
+
+| 필트                 | 타입     |
+| -------------------- | -------- |
+| (예약됨)             | u32      |
+| 권한 스택 테이블     | [u64; 3] |
+| (예약됨)             | u64      |
+| 인터럽트 스택 테이블 | [u64; 7] |
+| (예약됨)             | u64      |
+| (예약됨)             | u16      |
+| I/O 맵 기준 주소     | u16      |
+
+CPU는 권한 수준 변경 시 권한 스택 테이블을 사용한다. 예를 들어, CPU가 유저 모드(권한 수준 3)에 있을 때 예외가 발생한 경우 CPU는 보통 예외 처리함수를 실행하기 전에 커널 모드(권한 수준 0)로 변경한다. 이 때, CPU는 권한 스택 테이블의 0번째 스택으로 변경한다.(0이 목표 권한 수준이기 때문이다). 커널엔 유저 모드 프로그램이 아직 없으므로 이 테이블을 잠시 신경끄도록 한다.
+
+## TSS 생성하기
+
+분리된 더블 폴트 스택을 가진 TSS을 인터럽트 스택 테이블에 새로 만든다. 그럴려면 TSS 구조체가 필요한데, 다행히도 `x86_64` 크레이트에 `TaskStateSegment`가 들어있다.
+
+`gbt` 모듈을 새로 만들고 이 안에 TSS를 생성한다.
+
+```rust
+// src/lib.rs 내부
+
+pub mod gdt;
+
+// src/gdt.rs 내부
+
+use x86_64::VirtAddr;
+use x86_64::structures::tss::TaskStateSegment;
+use lazy_static::lazy_static;
+
+pub const DOUBLE_FAULT_IST_INDEX: u16 = 0;
+
+lazy_static! {
+    static ref TSS: TaskStateSegment = {
+        let mut tss = TaskStateSegment::new();
+        tss.interrupt_stack_table[DOUBLE_FAULT_IST_INDEX as usize] = {
+            const STACK_SIZE: usize = 4096;
+            static mut STACK: [u8; STACK_SIZE] = [0; STACK_SIZE];
+
+            let stack_start = VirtAddr::from_ptr(unsafe { &STACK });
+            let stack_end = stack_start + STACK_SIZE;
+            stack_end
+        };
+        tss
+    };
+}
+```
+
+0번째 IST 시작점을 더블 폴트 스택으로 설정한다. 그런 다음 더블 폴트 스택의 최상위 주소를 0번째 시작점에 쓴다. x86에서는 스택이 아래로(높은 주소에서 낮은 주소로) 커지기 때문에 최상위 주소에 썼다.
