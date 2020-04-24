@@ -9,6 +9,7 @@
 - [DataStructure](#dataStructure)
 - [DesignPattern](#designPattern)
 - [DevOps](#devOps)
+- [Games](#games)
 - [Git](#git)
 - [Haskell](#haskell)
   <!-- * [Database](#database) -->
@@ -57,6 +58,10 @@
 
 - [A Successful Deployment Model](DevOps/A-successful-deployment-model.md)
 - [Should You Use Kubernetes and Docker In Your Next Project](DevOps/Should-You-Use-Kubernetes-and-Docker-In-Your-Next-Project.md)
+
+## Games
+
+- [Swipe Brick Breaker](Games/swipe-brick-breaker.md)
 
 ## Git
 
