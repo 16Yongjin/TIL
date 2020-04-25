@@ -93,6 +93,7 @@
 - [VGA 택스트 모드](OS/VGA-Text-Mode.md)
 - [CPU 예외처리](OS/CPU-Exceptions.md)
 - [더블 폴트](OS/Double-Faults.md)
+- [하드웨어 인터럽트](OS/Hardware-Interrupts.md)
 
 ## Rust
 
