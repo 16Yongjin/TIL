@@ -47,4 +47,149 @@ Secondary ATA ----> |____________|   Parallel Port 1----> |____________|
 
 ### 구현
 
-기본 설정 상태의 PIC는 PIC에 0-15사이의 인터럽트 벡터 번호를 보낸다. 이 번호들은 이미 CPU 예외에 사용되고 있으므로(ex, 8번은 더블 폴트) 기본 설정 상태의 PIC는 사용할 수 없다.
+기본 설정 상태의 PIC는 PIC에 0-15사이의 인터럽트 벡터 번호를 보낸다. 이 번호들은 이미 CPU 예외에 사용되고 있으므로(ex, 8번은 더블 폴트) 기본 설정 상태의 PIC는 사용할 수 없다. 번호가 겹치는 문제를 해결하기 위해 PIC 인터럽트를 다른 번호로 옮겨야 한다. 예외만 피하면 아무 번호대나 사용해도 괜찮지만, 일반적으로 32-47번을 사용한다. 이 번호들이 예외를 담은 32개의 숫자 다음에 처음으로 나오는 사용되지 않는 번호이기 때문이다.
+
+PIC의 커맨드와 데이터 포트에 특수값을 작성해서 설정을 할 수 있다. 다행히도 `pic8259_simple` 크레이트를 이용하면 초기화 순서를 직접 작성하지 않아도 된다.
+크레이트가 어떻게 작동하는지는 [이 소스 코드](https://docs.rs/crate/pic8259_simple/0.1.1/source/src/lib.rs)를 확인하면 된다. 길지 않고 문서화가 잘 돼있다.
+
+다음과 같이 크레이트를 추가한다.
+
+```toml
+# in Cargo.toml
+
+[dependencies]
+pic8259_simple = "0.1.1"
+```
+
+이 크레이트는 `ChainedPics` 구조체를 주요 추상화로 제공한다. `ChainedPics` 구조체는 위에서 봤던 주/부 PIC의 레이아웃을 표현하고 다음과 같이 사용된다.
+
+```rust
+// src/interrupts.rs 내부
+
+use pic8259_simple::ChainedPics;
+use spin;
+
+pub const PIC_1_OFFSET: u8 = 32;
+pub const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
+
+pub static PICS: spin::Mutex<ChainedPics> =
+    spin::Mutex::new(unsafe { ChainedPics::new(PIC_1_OFFSET, PIC_2_OFFSET) });
+```
+
+pic의 오프셋을 설정해서 32-47번을 가지도록 했다. `ChainedPics` 구조체를 `Mutex`로 감쌌기에 `lock` 메서드를 활용하면 안전하게 가변 접근을 할 수 있다. `ChainedPics::new` 함수는 인자로 잘못된 오프셋이 들어올 수 있으므로 안전하지 않다.
+
+이제 `init` 함수에서 8259 PIC를 초기화한다.
+
+```rust
+// src/lib.rs 내부
+
+pub fn init() {
+    gdt::init();
+    interrupts::init_idt();
+    unsafe { interrupts::PICS.lock().initialize() }; // 새로 추가
+}
+```
+
+`initialize`로 초기화를 하는데 `ChainedPics::new` 함수처럼 PIC를 잘못 설정하면 알 수 없는 동작을 할 수 있으므로 `initialize` 메서드는 안전하지 않다.
+
+`cargo xrun`을 실행하면 "It did not crash" 메시지가 나온다.
+
+## 인터럽트 허용하기
+
+CPU 설정에서 인터럽트를 허용하지 않아서 아무 일도 일어나지 않는다. 즉, CPU는 인터럽트 컨트롤러를 전혀 듣고 있지 않아서 인터럽트가 CPU로 못 가고 있다. 다음과 같이 설정을 변경한다.
+
+```rust
+// src/lib.rs 내부
+
+pub fn init() {
+    gdt::init();
+    interrupts::init_idt();
+    unsafe { interrupts::PICS.lock().initialize() };
+    x86_64::instructions::interrupts::enable();     // 새로 추가
+}
+```
+
+`x86_64` 크레이트의 `interrupts::enable` 함수는 `sti` 명령어(set interrupts)를 실행해서 외부 인터럽트를 허용한다. `cargo xrun`을 다시 실행해보면 이제는 더블 폴트가 발생한다.
+
+하드웨어 타이머(정확히는 Intel 8253)가 기본적으로 켜져 있기 때문에 더블 폴트가 발생했다. 인터럽트를 허용하자마자 타이머 인터럽트를 받기 시작했다. 타이머 인터럽트를 다룰 처리 함수를 아직 정의하지 않아서 더블 폴트 처리 함수가 실행됐다.
+
+## 타이머 인터럽트 처리하기
+
+위의 그림에서 봤던 것처럼, 타이머는 주 PIC의 0번 선을 사용한다. 그래서 CPU에 32번 인터럽트(0 + 오프셋 32)로 전달된다. 이 숫자를 하드코딩된 인덱스 32 대신에 `InterruptIndex` 열거형에 담는다.
+
+```rust
+// src/interrupts.rs 내부
+
+#[derive(Debug, Clone, Copy)]
+#[repr(u8)]
+pub enum InterruptIndex {
+    Timer = PIC_1_OFFSET,
+}
+
+impl InterruptIndex {
+    fn as_u8(self) -> u8 {
+        self as u8
+    }
+
+    fn as_usize(self) -> usize {
+        usize::from(self.as_u8())
+    }
+}
+```
+
+`InterruptIndex` 열거형은 C의 열거형처럼 각 변형에 직접 인덱스를 특정할 수 있다. `repr(u8)` 속성이 각 변형이 `u8`로 표현되게 한다. 나중에 다른 인터럽트를 담을 변형을 추가할 것이다.
+
+이제 타이머 인터럽트 처러 함수를 추가한다.
+
+```rust
+// src/interrupts.rs 내부
+
+use crate::print;
+
+lazy_static! {
+    static ref IDT: InterruptDescriptorTable = {
+        let mut idt = InterruptDescriptorTable::new();
+        idt.breakpoint.set_handler_fn(breakpoint_handler);
+        […]
+        idt[InterruptIndex::Timer.as_usize()]
+            .set_handler_fn(timer_interrupt_handler); // new
+
+        idt
+    };
+}
+
+extern "x86-interrupt" fn timer_interrupt_handler(
+    _stack_frame: &mut InterruptStackFrame)
+{
+    print!(".");
+}
+```
+
+`timer_interrupt_handler` 함수는 다른 예외 처리 함수와 시그내처가 같다. CPU가 예외와 외부 인터럽트에 동일하게 반응하기 떄문이다(유일한 차이점은 일부 예외가 에러 코드를 스택에 넣는 것이다). `InterruptDescriptorTable` 구조체는 `IndexMut` 트레잇을 구현해서 배열 인덱스 접근 문법으로 각 시작점에 접근할 수 있다.
+
+정의한 타이머 인터럽트 처리 함수는 화면에 점을 찍는다. 타이머 인터럽트가 주기적으로 발행하므로, 각 타이머 틱마다 점이 생겨야 되는데 아래처럼 점이 하나만 출력됐다.
+
+![single-tick](https://user-images.githubusercontent.com/22253556/80371531-031b1080-88cd-11ea-9d11-5bf576478830.png)
+
+### 인터럽트 종료
+
+PIC는 인터럽트 처리 함수가 명시적인 인터럽트 종료(end of interrupt, EOI) 신호를 보낼거라고 기대하기 때문에 점이 한 개만 찍혔다. EOI 신호는 PIC에게 인터럽트가 처리됐고 시스템이 다음 인터럽트를 받을 준비가 됐다고 말해준다. PIC는 아직 첫 번째 타이머 인터럽트를 처리하는 중이라 생각해서, 다음 인터럽트를 보내기 전에 EOI 신호를 가만히 기다린다.
+
+`PICS` 구조체를 사용해서 EOI를 보낸다.
+
+```rust
+// src/interrupts.rs 내부
+
+extern "x86-interrupt" fn timer_interrupt_handler(
+    _stack_frame: &mut InterruptStackFrame)
+{
+    print!(".");
+
+    unsafe {
+        PICS.lock()
+            .notify_end_of_interrupt(InterruptIndex::Timer.as_u8());
+    }
+}
+```
+
+`notify_end_of_interrupt` 메서드는 주/부 PIC 중 어떤 PIC가 인터럽트를 보낸 지 알아낸 후에 `command`와 `data` 포트로 각 컨트롤러에 EOI 신호를 보낸다. 만약 부 PIC가 인터럽트를 보냈으면 부 PIC가 주 PIC에 연결되있으므로 양 PIC 모두 알아야 한다.
