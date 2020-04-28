@@ -193,3 +193,48 @@ extern "x86-interrupt" fn timer_interrupt_handler(
 ```
 
 `notify_end_of_interrupt` 메서드는 주/부 PIC 중 어떤 PIC가 인터럽트를 보낸 지 알아낸 후에 `command`와 `data` 포트로 각 컨트롤러에 EOI 신호를 보낸다. 만약 부 PIC가 인터럽트를 보냈으면 부 PIC가 주 PIC에 연결되있으므로 양 PIC 모두 알아야 한다.
+
+인터럽트 벡터 숫자를 정확히 사용해야 한다. 잘못하면 보내지 않은 인터럽트를 실수로 지워버리거나 시스템이 중지될 수 있다. 이런 이유로 `notify_end_of_interrupt`는 안전하지 않은 함수이다.
+
+이제 `cargo xrun`을 실행하면 주기적으로 화면에 점이 찍힌다.
+
+![image](https://user-images.githubusercontent.com/22253556/80484940-80a95400-8993-11ea-8ee2-48675cefa721.png)
+
+### 타이머 설정하기
+
+여기서 사용한 하드웨어 타이머는 프로그램 가능한 간격 타이머(Progammable Interval Timer, PIT)이다. 이름에서 알 수 있듯이, 인터럽트 사이 간격을 설정할 수 있다. 잠시 뒤에 APIC 타이머를 사용할 예정이라 자세한 건 다루지 않지만 OSDev 위키의 [PIT 설정법](https://wiki.osdev.org/Programmable_Interval_Timer)에 자세한 설명을 찾아볼 수 있다.
+
+## 데드락
+
+현재 커널은 타이머 인터럽트가 비동기적으로 일어나는 일종의 동시성을 가지게 됐다. 그래서 타이머 인터럽트가 언제라도 `_start` 함수를 방해할 수 있다. 다행히도 러스트의 소유권 시스템이 컴파일 타임에 동시성과 관련된 많은 버그를 막아준다. 하지만 데드락은 예외다. 데드락은 스레드가 절대 풀릴 일 없는 락을 얻으려고 할 때 발생하고 이 경우 스레드는 무한정 정지상태에 놓인다.
+
+이미 커널에서 데드락을 일으킨 적이 있다. `println` 매크로는 `vga_buffer::_print`를 호출하면서 스핀락을 사용하는 전역 `WRITER`의 락을 건다.
+
+```rust
+// src/vga_buffer.rs 내부
+
+[…]
+
+#[doc(hidden)]
+pub fn _print(args: fmt::Arguments) {
+    use core::fmt::Write;
+    WRITER.lock().write_fmt(args).unwrap();
+}
+```
+
+위 코드는 `WRITER`에 락을 걸고 거기에 `write_fmt`를 호출한다. 그리고 함수가 끝나면 암시적으로 락을 푼다. `WRITER`가 락 상태일 때 인터럽트가 발생해서 인터럽트 처리 함수가 무언가를 출력하는 경우를 생각해본다:
+
+| Timestep | \_start                      | interrupt_handler                                    |
+| -------- | ---------------------------- | ---------------------------------------------------- |
+| 0        | `println!` 호출              |                                                      |
+| 1        | `print`가 `WRITER`에 락 시킴 |                                                      |
+| 2        |                              | 인터럽트가 발생하고, 처리 함수가 작동하기 시작함     |
+| 3        |                              | `println!` 실행                                      |
+| 4        |                              | `print`가 이미 락이 걸린 `WRITER`의 락을 얻으려고 함 |
+| 5        |                              | `print`가 이미 락이 걸린 `WRITER`의 락을 얻으려고 함 |
+| …        |                              | …                                                    |
+| 불가능   | `WRITER`의 락이 풀림         |                                                      |
+
+`WRITER`가 락이 된 상태이므로 인터럽트 처리 함수는 `WRITER`의 락이 풀릴 때까지 기다린다. 그러나, `_start` 함수는 인터럽트 처리 함수가 반환된 후에 실행을 계속하기에 락이 절대 풀리지 않는다. 그래서 전체 시스템이 중지된다.
+
+### 데드락 발생시키기
