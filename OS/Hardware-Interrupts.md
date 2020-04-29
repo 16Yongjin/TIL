@@ -238,3 +238,209 @@ pub fn _print(args: fmt::Arguments) {
 `WRITER`가 락이 된 상태이므로 인터럽트 처리 함수는 `WRITER`의 락이 풀릴 때까지 기다린다. 그러나, `_start` 함수는 인터럽트 처리 함수가 반환된 후에 실행을 계속하기에 락이 절대 풀리지 않는다. 그래서 전체 시스템이 중지된다.
 
 ### 데드락 발생시키기
+
+`_start` 함수 끝에 있는 루프에서 출력하면 커널이 데드락에 걸리게 할 수 있다.
+
+```rust
+// src/main.rs 내부
+
+#[no_mangle]
+pub extern "C" fn _start() -> ! {
+    […]
+    loop {
+        use blog_os::print;
+        print!("-");        // new
+    }
+}
+```
+
+커널을 실행시키면 다음과 같이 나온다.
+
+![image](https://user-images.githubusercontent.com/22253556/80589559-6172fb00-8a55-11ea-8ea4-b08ce6111387.png)
+
+타이머 인터럽트가 처음 발생하기 전까지만 밑줄이 출력된다. 그런다음 타이머 인터럽트 처리 함수가 점을 출력하려고해서 시스템이 멈춘다. 위 그림에서 점이 찍혀있지 않은 이유다.
+
+타이머 인터럽트가 비동기적으로 일어나므로 밑줄이 출력되는 개수는 실행할 때마다 다르다. 이러한 비결정적 특성이 동시성 관련 버그를 잡기 힘들게 한다.
+
+### 데드락 방지하기
+
+데드락을 피하기 위해 `Mutex`가 락 상태인 경우 인터럽트를 끌 수 있다.
+
+```rust
+// src/vga_buffer.rs 내부
+
+/// 전역 `WRITER` 인스턴스를 사용해서
+/// VGA 텍스트 버퍼에 입력받은 포맷된 문자열을 출력한다.
+#[doc(hidden)]
+pub fn _print(args: fmt::Arguments) {
+    use core::fmt::Write;
+    use x86_64::instructions::interrupts;   // 추가
+
+    interrupts::without_interrupts(|| {     // 추가
+        WRITER.lock().write_fmt(args).unwrap();
+    });
+}
+```
+
+`without_interrupts` 함수는 클로저를 인자로 받아서 인터럽트가 없는 환경에서 실행한다. `without_interrupts` 함수로 `Mutex`가 락 상태일 때 인터럽트 발생을 막았다. 커널을 실행해보면 멈추는 일이 없이 계속해서 동작한다. (루프 안의 출력이 너무 빨라서 점은 볼 수 없다. 루프에 `for _ in 0..10000 {}`를 넣어서 출력 속도를 늦추면 된다.)
+
+시리얼 출력 함수에도 똑같이 데드락 방지 코드를 추가한다.
+
+```rust
+// src/serial.rs 내부
+
+#[doc(hidden)]
+pub fn _print(args: ::core::fmt::Arguments) {
+    use core::fmt::Write;
+    use x86_64::instructions::interrupts;       // 추가
+
+    interrupts::without_interrupts(|| {         // 추가
+        SERIAL1
+            .lock()
+            .write_fmt(args)
+            .expect("Printing to serial failed");
+    });
+}
+```
+
+인터럽트를 끈다고 모든 문제가 해결되지는 않는다. 인터럽트 레이턴시, 즉 시스템이 인터럽트에 반응하는 시간이 늘어나는 문제가 생긴다. 그래서 매우 짧은 시간 동안만 인터럽트를 꺼야한다.
+
+## 경쟁 조건 방지하기
+
+`cargo xtest`를 실행하면 `test_println_output` 테스트가 실패한다.
+
+```
+> cargo xtest --lib
+[…]
+Running 4 tests
+test_breakpoint_exception...[ok]
+test_println... [ok]
+test_println_many... [ok]
+test_println_output... [failed]
+
+Error: panicked at 'assertion failed: `(left == right)`
+  left: `'.'`,
+ right: `'S'`', src/vga_buffer.rs:205:9
+```
+
+테스트와 타이머 사이에 경쟁 조건이 발생해서 생긴 문제이다. 테스트는 다음과 같다.
+
+```rust
+// src/vga_buffer.rs 내부
+
+#[test_case]
+fn test_println_output() {
+    serial_print!("test_println_output... ");
+
+    let s = "Some test string that fits on a single line";
+    println!("{}", s);
+    for (i, c) in s.chars().enumerate() {
+        let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i].read();
+        assert_eq!(char::from(screen_char.ascii_character), c);
+    }
+
+    serial_println!("[ok]");
+}
+```
+
+테스트는 VGA 버퍼에 출력한 뒤 `buffer_chars`를 직접 반복해서 출력을 확인한다.
+`println`과 화면 출력 문자를 읽는 사이에 타이머 인터럽트 처리 함수가 실행돼서 경쟁 조건이 발생했다. 한편, 이 경쟁 조건이 그렇게 위험하지 않아서 컴파일 타임에 제거되지 않았다. 이와 관련된 내용은 [러스트노미콘](https://doc.rust-lang.org/nomicon/races.html)에 나와있다.
+
+타이머 처리 함수가 중간에 `.`을 못 찍도록 테스트가 진행되는 동안 `WRITER`를 락 상태에 놓아서 경쟁 상태를 방지할 수 있다. 수정된 테스트는 다음과 같다.
+
+```rust
+// src/vga_buffer.rs 내부
+
+#[test_case]
+fn test_println_output() {
+    use core::fmt::Write;
+    use x86_64::instructions::interrupts;
+
+    serial_print!("test_println_output... ");
+
+    let s = "Some test string that fits on a single line";
+    interrupts::without_interrupts(|| {
+        let mut writer = WRITER.lock();
+        writeln!(writer, "\n{}", s).expect("writeln failed");
+        for (i, c) in s.chars().enumerate() {
+            let screen_char = writer.buffer.chars[BUFFER_HEIGHT - 2][i].read();
+            assert_eq!(char::from(screen_char.ascii_character), c);
+        }
+    });
+
+    serial_println!("[ok]");
+}
+```
+
+다음의 변화를 줬다.
+
+- 명시적으로 `lock()` 메서드를 호출해서 테스트가 완료될 때까지 `WRITER`에 락이 걸리게 했다. `println` 대신에 `writeln` 매크로를 사용해서 락을 통해 얻은 `writer`로 출력이 가능하도록 했다.
+- 다른 데드락을 방지하기 위해, 테스트가 진행되는 동안 인터럽트를 껐다. 이렇게 안하면 `WRITER`에 락이 걸린 동안 테스트가 방해된다.
+- 테스트 실행 전에 타이머 인터럽트 처리함수가 실행될 수 있으므로, 문자열 `s`를 출력하기 전에 줄바꿈 `\n`을 추가했다. 이를 통해 타이머 처리 함수가 현재 줄에 `.`을 추가해서 테스트가 실패하는 일을 막았다.
+
+위의 변경사항을 반영하고 `cargo xtest`를 실행하면 테스트가 결정적으로 성공한다.
+
+전에 발생했던 경쟁 조건은 크게 위험하지 않아서 고작 테스트만 실패시켰다. 다른 경쟁 조건 같았으면 비결정적 특성때문에 디버깅하기 매우 어려웠을 것이다. 다행히도 러스트는 정의되지 않은 동작(시스템 충돌이나 메모리 손상)을 일으킬 수 있는 심각한 경쟁 조건은 막아준다.
+
+## `hlt` 명령어
+
+지금까지 `_start`와 `panic` 함수 끝에 빈 루프를 사용해서 CPU가 영원히 작동하게 했다. 그러나, 이런 루프는 아무 일도 안 하는데 CPU를 최고속도로 돌게해서 비효율적이다. 커널을 실행했을 떄 작업 관리자를 보면 QEMU 프로세스가 전체 시간동안 CPU를 거의 100% 사용한다.
+
+`hlt` 명령어는 다음 명령어 전까지 CPU를 멈춰서 에너지 소모가 적은 슬립 상태로 들어갈 수 있게 한다. `hlt` 명령어를 사용해서 에너지 효율적인 무한 루프를 만든다:
+
+```rust
+// src/lib.rs 내부
+
+pub fn hlt_loop() -> ! {
+    loop {
+        x86_64::instructions::hlt();
+    }
+}
+```
+
+`instructions::hlt` 함수는 `hlt` 어셈블리 명령어를 [얇게 감싼다](https://github.com/rust-osdev/x86_64/blob/5e8e218381c5205f5777cb50da3ecac5d7e3b1ab/src/instructions/mod.rs#L16-L22). `hlt` 함수는 메모리 안정성을 해칠 방법이 없기에 안전하다.
+
+`_start`와 `_panic`에 무한 루프 대신에 `hlt_loop`를 사용한다.
+
+```rust
+// src/main.rs 내부
+
+#[no_mangle]
+pub extern "C" fn _start() -> ! {
+    […]
+
+    println!("It did not crash!");
+    blog_os::hlt_loop();            // new
+}
+
+#[cfg(not(test))]
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+    println!("{}", info);
+    blog_os::hlt_loop();            // new
+}
+```
+
+`lib.rs`도 변경한다.
+
+```rust
+// src/lib.rs 내부
+
+/// Entry point for `cargo xtest`
+#[cfg(test)]
+#[no_mangle]
+pub extern "C" fn _start() -> ! {
+    init();
+    test_main();
+    hlt_loop();         // new
+}
+
+pub fn test_panic_handler(info: &PanicInfo) -> ! {
+    serial_println!("[failed]\n");
+    serial_println!("Error: {}\n", info);
+    exit_qemu(QemuExitCode::Failed);
+    hlt_loop();         // new
+}
+```
+
+이제 커널을 실행해보면, CPU 사용량이 줄어든 것을 볼 수 있다.
