@@ -386,7 +386,7 @@ fn test_println_output() {
 
 지금까지 `_start`와 `panic` 함수 끝에 빈 루프를 사용해서 CPU가 영원히 작동하게 했다. 그러나, 이런 루프는 아무 일도 안 하는데 CPU를 최고속도로 돌게해서 비효율적이다. 커널을 실행했을 떄 작업 관리자를 보면 QEMU 프로세스가 전체 시간동안 CPU를 거의 100% 사용한다.
 
-`hlt` 명령어는 다음 명령어 전까지 CPU를 멈춰서 에너지 소모가 적은 슬립 상태로 들어갈 수 있게 한다. `hlt` 명령어를 사용해서 에너지 효율적인 무한 루프를 만든다:
+`hlt` 명령어는 다음 명령어 전까지 CPU를 멈춰서 에너지 소모가 적은 슬립 상태로 들어갈 수 있게 한다. `hlt` 명령어를 사용해서 에너지 효율적인 무한 루프를 만든다.
 
 ```rust
 // src/lib.rs 내부
@@ -410,14 +410,14 @@ pub extern "C" fn _start() -> ! {
     […]
 
     println!("It did not crash!");
-    blog_os::hlt_loop();            // new
+    blog_os::hlt_loop();            // 추가
 }
 
 #[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
-    blog_os::hlt_loop();            // new
+    blog_os::hlt_loop();            // 추가
 }
 ```
 
@@ -432,15 +432,93 @@ fn panic(info: &PanicInfo) -> ! {
 pub extern "C" fn _start() -> ! {
     init();
     test_main();
-    hlt_loop();         // new
+    hlt_loop();         // 추가
 }
 
 pub fn test_panic_handler(info: &PanicInfo) -> ! {
     serial_println!("[failed]\n");
     serial_println!("Error: {}\n", info);
     exit_qemu(QemuExitCode::Failed);
-    hlt_loop();         // new
+    hlt_loop();         // 추가
 }
 ```
 
-이제 커널을 실행해보면, CPU 사용량이 줄어든 것을 볼 수 있다.
+커널을 실행해보면, CPU 사용량이 줄어든 것을 볼 수 있다.
+
+## 키보드 입력
+
+외부 장치가 보낸 인터럽트를 처리할 수 있으므로 키보드 입력 지원을 할 수 있다. 키보드 입력을 지원하면 처음으로 커널과 상호작용할 수 있게 된다.
+
+> 여기서 USB가 아닌 PS/2 키보드를 다루는 법만 설명하지만, 메인보드가 오래된 소프트웨어를 지원하기 위해 PS/2 장치를 USB 키보드로 에뮬레이트 해준다. 그래서 커널에 USB 지원을 추가하기 전까지 USB 키보드는 신경쓰지 않아도 된다.
+
+키보드 컨트롤러는 하드웨어 타이머처럼 기본적으로 활성화되어 있다. 그래서 키를 누르면 키보드 컨트롤러가 PIC에 인터럽트를 보내고, 다시 PIC가 CPU에 인터럽트를 전달한다. CPU가 IDT에서 처리 함수를 찾지만, 해당하는 시작점이 비어있어서 더블 폴트가 발생한다.
+
+키보드 인터럽트 처리 함수를 추가해본다. 타이머 인터럽트를 정의했던 것처럼 하면 되고, 인터럽트 숫자만 다르게 한다.
+
+```rust
+// src/interrupts.rs 내부
+
+#[derive(Debug, Clone, Copy)]
+#[repr(u8)]
+pub enum InterruptIndex {
+    Timer = PIC_1_OFFSET,
+    Keyboard, // 새로 추가
+}
+
+lazy_static! {
+    static ref IDT: InterruptDescriptorTable = {
+        let mut idt = InterruptDescriptorTable::new();
+        idt.breakpoint.set_handler_fn(breakpoint_handler);
+        […]
+        // 새로 추가
+        idt[InterruptIndex::Keyboard.as_usize()]
+            .set_handler_fn(keyboard_interrupt_handler);
+
+        idt
+    };
+}
+
+extern "x86-interrupt" fn keyboard_interrupt_handler(
+    _stack_frame: &mut InterruptStackFrame)
+{
+    print!("k");
+
+    unsafe {
+        PICS.lock()
+            .notify_end_of_interrupt(InterruptIndex::Keyboard.as_u8());
+    }
+}
+```
+
+8259 PIC 연결도에서 봤듯이, 키보드는 주 PIC의 1번 선을 사용한다. 즉, 키보드는 CPU에 33번 인터럽트(1 + 오프셋 32)를 보낸다. `InterruptIndex` 열거형에 33번을 나타내는 `Keyboard` 변형을 새로 추가했다. 열거형 변형의 기본값은 이전값에 1 더한 값이라 33을 명시적으로 입력하지 않았다. 인터럽트 처리 함수는 `k`를 출력하고 인터럽트 컨트롤러에 인터럽트 종료 신호를 보낸다.
+
+커널에 키를 입력하면 `k` 나타난다. 그런데 처음 키를 눌렀을 때만 그렇고 키를 계속 눌러도 화면에 `k`가 더 나타나지 않는다. 이는 키보트 컨트롤러가 입력된 키의 *스캔 코드*를 읽기 전까지 다른 인터럽트를 보내지 않기 때문이다.
+
+### 스캔 코드 읽기
+
+키보드 컨트롤러에 어떤 키가 눌렸는지 물어봐야 한다. PS/2 컨트롤러의 데이터 포트(`0x60`번 I/O 포트)를 읽어서 눌린 키를 알아낸다.
+
+```rust
+// src/interrupts.rs 내부
+
+extern "x86-interrupt" fn keyboard_interrupt_handler(
+    _stack_frame: &mut InterruptStackFrame)
+{
+    use x86_64::instructions::port::Port;
+
+    let mut port = Port::new(0x60);
+    let scancode: u8 = unsafe { port.read() };
+    print!("{}", scancode);
+
+    unsafe {
+        PICS.lock()
+            .notify_end_of_interrupt(InterruptIndex::Keyboard.as_u8());
+    }
+}
+```
+
+`x86_64` 크레이트의 `Port` 타입을 사용해 키보드의 데이터 포트에서 바이트를 읽어온다. 읽어온 바이트는 *스캔 코드*라고 불리며 키 눌림과 풀림을 나타낸다. 스캔 코드를 화면에 출력한다.
+
+![key-press](https://user-images.githubusercontent.com/22253556/80710037-440f6100-8b29-11ea-8872-cd0822c20e3f.png)
+
+위의 이미지는 "123"을 느리게 입력하는 이미지이다.
