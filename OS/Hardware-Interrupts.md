@@ -521,4 +521,122 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(
 
 ![key-press](https://user-images.githubusercontent.com/22253556/80710037-440f6100-8b29-11ea-8872-cd0822c20e3f.png)
 
-위의 이미지는 "123"을 느리게 입력하는 이미지이다.
+위의 이미지는 "123"을 느리게 입력하는 모습을 보여준다. 인접 키가 인접 스캔 코드를 가지고 있고 키를 누르고 뗄 때마다 다른 스캔 코드가 나타난다. 이 스캔 코드를 실제 키 입력으로 해석하려면 어떻게 해야할까?
+
+### 스캔 코드 해석하기
+
+스캔 코드와 키를 매핑하는 규약, 즉 스캔코드 세트가 세 가지 있다. 세 개 모두 초기 IBM 컴퓨터([IBM XT](https://en.wikipedia.org/wiki/IBM_Personal_Computer_XT), [IBM 3270 PC](https://en.wikipedia.org/wiki/IBM_3270_PC), [IBM AT](https://en.wikipedia.org/wiki/IBM_Personal_Computer/AT))에서 나왔다. 나중에 나온 컴퓨터들은 다행히 스캔 코드를 새로 만들지 않고, 이미 있는 스캔코드 세트를 모방하고 확장했다. 대부분의 키보드는 스캔 코드 세트 3개 중 하나를 모방하도록 설정할 수 있다.
+
+PS/2 키보드는 기본적으로 스캔 코드 1번 세트 ("XT")를 모방한다. 1번 세트는 스캔 코드의 하위 비트 7개가 키를 나타내고 최상위 비트는 키가 눌렸는지("0") 풀렸는지("1")를 나타낸다. IBM XT에 없는 키(ex, 숫자패드의 엔터키)는 스캔 코드 2개를 붙여서 만들었다: `0xe0` 이스케이프 바이트와 키를 나타내는 바이트를 합쳤다. 스캔코드 1번 세트 목록과 해당하는 키는 [OSDev Wiki](https://wiki.osdev.org/Keyboard#Scan_Code_Set_1)에서 찾아볼 수 있다.
+
+`match` 문을 사용해서 스캔 코드를 키로 해석한다.
+
+```rust
+// src/interrupts.rs 내부
+
+extern "x86-interrupt" fn keyboard_interrupt_handler(
+    _stack_frame: &mut InterruptStackFrame)
+{
+    use x86_64::instructions::port::Port;
+
+    let mut port = Port::new(0x60);
+    let scancode: u8 = unsafe { port.read() };
+
+    // new
+    let key = match scancode {
+        0x02 => Some('1'),
+        0x03 => Some('2'),
+        0x04 => Some('3'),
+        0x05 => Some('4'),
+        0x06 => Some('5'),
+        0x07 => Some('6'),
+        0x08 => Some('7'),
+        0x09 => Some('8'),
+        0x0a => Some('9'),
+        0x0b => Some('0'),
+        _ => None,
+    };
+    if let Some(key) = key {
+        print!("{}", key);
+    }
+
+    unsafe {
+        PICS.lock()
+            .notify_end_of_interrupt(InterruptIndex::Keyboard.as_u8());
+    }
+}
+```
+
+위의 코드는 0-9 키 눌림만 해석하고 나머지 키는 무시한다. `match` 문을 사용해서 각 스캔 코드를 문자 또는 `None`에 할당했다. 그런 다음 `if let`으로 옵션값인 `key`를 분해한다. 분해한 값을 같은 이름을 가진 변수 `key`에 넣어서, 이전 선언을 가린다.
+
+이제 다음과 같이 숫자를 입력할 수 있다.
+
+![scancode-interpreted](https://user-images.githubusercontent.com/22253556/80804105-1c82cc00-8bef-11ea-849c-e64e499b333a.png)
+
+다른 키와 위와 같이 해석하면 된다. 스캔 코드 1, 2번 세트를 해석해주는 `pc-keyboard` 크레이트를 사용하면 직접 스캔 코드 세트를 구현하지 않아도 된다. 이 크레이트를 `Cargo.toml`에 추가하고 `lib.rs`로 가져온다.
+
+```toml
+# Cargo.toml 내부
+
+[dependencies]
+pc-keyboard = "0.5.0"
+```
+
+`pc-keyboard` 크레이트를 이용해서 `keyboard_interrupt_handler`를 재작성한다.
+
+```rust
+// in/src/interrupts.rs
+
+extern "x86-interrupt" fn keyboard_interrupt_handler(
+    _stack_frame: &mut InterruptStackFrame)
+{
+    use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
+    use spin::Mutex;
+    use x86_64::instructions::port::Port;
+
+    lazy_static! {
+        static ref KEYBOARD: Mutex<Keyboard<layouts::Us104Key, ScancodeSet1>> =
+            Mutex::new(Keyboard::new(layouts::Us104Key, ScancodeSet1,
+                HandleControl::Ignore)
+            );
+    }
+
+    let mut keyboard = KEYBOARD.lock();
+    let mut port = Port::new(0x60);
+
+    let scancode: u8 = unsafe { port.read() };
+    if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
+        if let Some(key) = keyboard.process_keyevent(key_event) {
+            match key {
+                DecodedKey::Unicode(character) => print!("{}", character),
+                DecodedKey::RawKey(key) => print!("{:?}", key),
+            }
+        }
+    }
+
+    unsafe {
+        PICS.lock()
+            .notify_end_of_interrupt(InterruptIndex::Keyboard.as_u8());
+    }
+}
+```
+
+`lazy_static` 매크로로 정적 `Keyboard` 객체를 만들고 뮤텍스로 보호했다. US 키보드 배열과 스캔 코드 1번 세트로 `Keyboard`를 초기화했다. `HandleControl` 인자는 `ctrl+[a-z]` 키를 유니코드 문자 `U+0001`부터 `U+001A`까지로 매핑한다. 유니코드 맵핑은 필요하지 않으므로 `Ignore` 옵션으로 `ctrl`키를 일반 키처럼 다룬다.
+
+인터럽트가 발생할 때마다, 뮤텍스에서 락을 얻고, 키보드 컨트롤러에서 스캔 코드를 읽고 `add_byte` 메서드에 보낸다. 그러면 스캔 코드가 `Option<KeyEvent>`로 해석된다. `KeyEvent`에는 어떤 키가 눌렸는지, 풀렸는지 판별할 수 있는 이벤트가 들어있다.
+
+그 다음 `process_keyevent` 메서드에 키 이벤트를 넘겨서 가능하면 문자로 해석한다. 예를 들어, 쉬프트 키가 눌렸는지에 따라 `A` 키의 눌림 이벤트를 소문자 `a`인지, 대문자 `A`인지 구별한다.
+
+이제 텍스트를 작성할 수 있다.
+
+![key-interpret](https://user-images.githubusercontent.com/22253556/80805061-ee52bb80-8bf1-11ea-9c77-7aab82f3f717.png)
+
+### 키보드 설정하기
+
+PS/2를 설정해서 어떤 스캔 코드 세트를 사용해야 하는 지 등을 변경할 수 있다. 자세한건 OSDev Wiki의 [명령어 설정하기](https://wiki.osdev.org/PS/2_Keyboard#Commands)를 참조한다.
+
+## 요약
+
+외부 인터럽트를 켜고 처리하는 법을 다뤘다. 8259 PIC와 주/부 PIC 배열, 인터럽트 숫자 재매핑, "인터럽트 종료" 시그널에 대해서도 배웠다. 하드웨어 타이머와 키보드 처리 함수를 구현하고 CPU를 다음 인터럽트 전까지 멈추는 `hlt` 명령어도 다뤘다.
+
+이제 커널과 상호작용을 할 수 있으므로 작은 쉘이나 미니 게임을 만들 때 사용할 수 있는 기본 구성요소가 생겼다.
