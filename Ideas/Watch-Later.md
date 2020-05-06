@@ -48,6 +48,10 @@
 
 - [OKKY ERD CLOUD](https://www.erdcloud.com/d/PK2Ae7d4asTRqHpHx)
 
+- [Database schema templates by DrawSQL](https://drawsql.app/templates)
+
+- [브라우저 SQL 튜토리얼](https://selectstarsql.com/)
+
 ## 유틸리티
 
 - [All – Tiny Helpers](https://tiny-helpers.dev/)

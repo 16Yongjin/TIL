@@ -15,7 +15,7 @@
   <!-- * [Database](#database) -->
 - [Javascript](#javascript)
 - [Linux](#linux)
-- [OS]](#os)
+- [OS](#os)
 - [Project](#project)
 - [Rust](#rust)
 - [Ideas](#ideas)
