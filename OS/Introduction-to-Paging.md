@@ -198,3 +198,85 @@ pub struct PageTable {
 - `큰 페이지` 플래그를 사용하면 레벨 2나 레벨 3 페이지 테이블의 항목이 맵핑된 프레임을 직접 가리키게 해서 더 큰 크기의 페이지를 만들 수 있게 한다. `큰 페이지` 플래그가 설정되면, 페이지 크기를 512배 늘릴 수 있다. 레벨 2 항목은 512 _ 4KB = 2MB, 레벨 3 항목은 512 _ 2MB = 1GB 크기의 페이지를 갖게 된다. 페이지 크기가 크면 변환 캐시와 페이지 사용량과 줄어드는 장점이 있다.
 
 `x86_64` 크레이트는 페이지 테이블과 페이지 항목을 표현하는 타입을 제공하므로, 페이징에 사용할 구조체를 만들지 않아도 된다.
+
+### 변환 색인 버퍼 (Translation Lookaside Buffer)
+
+4단 페이지 테이블의 가상 주소 변환은 각 변환 당 메모리 접근을 4번씩 해야 하므로 비용이 크다. x86_64 아키텍처는 성능 향상을 위해 *변환 색인 버퍼*에 마지막 변환 몇 개를 캐시한다. 번환이 캐시되어있으면 변환 과정을 건너 뛸 수 있다.
+
+다른 CPU 캐시와 달리, TLB는 완전히 투명하지 않고 페이지 테이블의 내용이 변경됐을 때 변환을 업데이트하거나 제거하지 않는다. 즉, 커널이 페이지 테이블을 변경할 때마다 TLB도 직접 업데이트해야 한다. 이를 위해 TLB에서 특정 페이지의 변환을 제거해서 다음 접근 시 페이지 테이블을 다시 로드하게 하는 `invlpg` ("invalidate page")라는 CPU 명령어가 있다. 또한, 주소 공간 스위치를 시뮬레이트하는 `CR3` 레지스터를 새로고침해서 TLB를 완전히 비울 수 있다. `x86_64` 크레이트는 [`tlb` module](https://docs.rs/x86_64/0.9.6/x86_64/instructions/tlb/index.html)을 통해 `invlpg`와 `CR3`를 새로고침하는 함수를 모두 제공한다.
+
+페이지 테이블을 변경할 때마다 TLB를 비우는게 중요하다. 그렇지 않으면 CPU가 이전 변환을 계속 사용해서 디버깅하기 어려운 비결정적 버그가 발생할 수 있다.
+
+## 구현
+
+알고보면 **커널은 이미 페이징을 사용하고 있다**. [아주 작은 러스트 커널](https://yongj.in/rust%20os/rust-os-a-minimal-rust-kernel/#%EB%B6%80%ED%8A%B8-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%A7%8C%EB%93%A4%EA%B8%B0)에서 모든 커널의 페이지를 물리 프레임에 매핑하는 4단 페이징 계층을 설정했다. x86_64 64비트 모드에서 페이징은 필수이므로 부트로더가 페이징 설정을 해놨다.
+
+그래서 커널에서 사용하는 모든 메모리 주소는 가상 주소이다. `0xb8000` 주소의 VGA 버퍼에 접근하는 것도 부트로더가 가상 페이지 `0xb8000`와 물리 프레임 `0xb8000`을 매핑한 덕분에 가능했다.
+
+페이징은 범위를 벗어난 메모리 접근에 임의의 물리적 메모리에 쓰는 대신 페이지 폴트를 일으키기 때문에 커널을 비교적 안전하게 만든다. 또한, 부트로더는 페이지에 올바른 접근 권한을 설정해서 코드가 들어있는 페이지만 실행할 수 있고 데이터 페이지에만 쓸 수 있게 한다.
+
+### 페이지 폴트
+
+커널 밖에 있는 메모리에 접근해서 페이지 폴트를 일으켜본다. 우선, 페이지 폴트 처리 함수를 만들어서 IDT에 등록한다. 이를 통해 더블 폴트 대신에 페이지 폴트가 발생한다.
+
+```rust
+// src/interrupts.rs 내부
+
+lazy_static! {
+    static ref IDT: InterruptDescriptorTable = {
+        let mut idt = InterruptDescriptorTable::new();
+
+        […]
+
+        idt.page_fault.set_handler_fn(page_fault_handler); // new
+
+        idt
+    };
+}
+
+use x86_64::structures::idt::PageFaultErrorCode;
+use crate::hlt_loop;
+
+extern "x86-interrupt" fn page_fault_handler(
+    stack_frame: &mut InterruptStackFrame,
+    error_code: PageFaultErrorCode,
+) {
+    use x86_64::registers::control::Cr2;
+
+    println!("EXCEPTION: PAGE FAULT");
+    println!("Accessed Address: {:?}", Cr2::read());
+    println!("Error Code: {:?}", error_code);
+    println!("{:#?}", stack_frame);
+    hlt_loop();
+}
+```
+
+페이지 폴트 발생 시 CPU에 의해 자동으로 설정되는 `CR2` 레지스터는 접근돼서 페이지 폴트를 발생시킨 가상 주소를 담고 있다. `x86_64` 크레이트의 `Cr2::read` 함수로 `CR2` 레지스터를 읽고 출력한다. `PageFaultErrorCode` 타입은 페이지 폴트를 일으킨 메모리 접근의 종류에 대한 자세한 정보를 제공한다. 문제를 일으킨 연산이 읽기인지 쓰기인지 등의 정보를 담고 있으므로 출력한다. 페이지 폴트 해결 전까지 실행을 재개할 수 없으므로 마지막에 `hlt_loop`에 들어간다.
+
+커널 외부 메모리에 접근해본다.
+
+```rust
+// src/main.rs 내부
+
+#[no_mangle]
+pub extern "C" fn _start() -> ! {
+    println!("Hello World{}", "!");
+
+    blog_os::init();
+
+    // 새로 추가
+    let ptr = 0xdeadbeaf as *mut u32;
+    unsafe { *ptr = 42; }
+
+    // 전과 같음
+    #[cfg(test)]
+    test_main();
+
+    println!("It did not crash!");
+    blog_os::hlt_loop();
+}
+```
+
+커널 실행 시 페이지 폴트 처리 함수가 실행된다.
+
+![page-fault-handler-called](https://user-images.githubusercontent.com/22253556/81561410-1c908200-93ce-11ea-9028-6f78eed99e5c.png)
