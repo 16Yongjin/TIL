@@ -14,7 +14,7 @@
 
 커널에서 페이지 테이블에 접근하기가 생각보다 쉽지 않다. 왜 그런지 이해하기 위해서 이전 글의 4단 페이지 테이블 예시를 살펴본다.
 
-![4-level-page-table](https://user-images.githubusercontent.com/22253556/82140791-47665480-986c-11ea-8472-cc8562566d38.png)
+![4-level-page-table](https://os.phil-opp.com/paging-introduction/x86_64-page-table-translation.svg)
 
 여기서 중요한 점은 각 페이지 항목이 다음 테이블의 실제 주소를 저장한다는 점이다. 이렇게 하면 주소를 변환할 필요가 없으므로 성능 저하와 무한 변환 루프를 막을 수 있다.
 
@@ -26,7 +26,7 @@
 
 가장 단순한 방법은 모든 페이지 테이블을 동일하게 매핑하는 것이다.
 
-![identity-mapping](https://user-images.githubusercontent.com/22253556/82141041-33bbed80-986e-11ea-8001-376501afac26.png)
+![identity-mapping](https://os.phil-opp.com/paging-implementation/identity-mapped-page-tables.svg)
 
 이 예제에서 다양한 동일하게 매핑된 페이지 테이블을 살펴본다. 동일 매핑 방식에서 페이지 테이블의 물리 주소가 유효한 가상 주소이므로 CR3 레지스터에서 시작하는 모든 레벨의 페이지 테이블에 쉽게 접근할 수 있다.
 
@@ -38,7 +38,7 @@
 
 가상 주소 공간이 복잡해지는 문제를 막기 위해 페이지 테이블 매핑에 별도의 메모리 영역을 사용할 수 있다. 페이지 테이블 프레임을 동일 매핑하는 대신에 프레임을 가상 주소 공간에서 고정 오프셋으로 매핑한다. 예를 들어 오프셋이 10TB일 수도 있다.
 
-![map-at-fixed-offset](https://user-images.githubusercontent.com/22253556/82141630-1ee15900-9872-11ea-8e01-7e6bba45dc4b.png)
+![map-at-fixed-offset](https://os.phil-opp.com/paging-implementation/page-tables-mapped-at-offset.svg)
 
 페이지 테이블 매핑에만 `10TiB..(10TiB + 물리 메모리 크기)` 범위의 가상 주소를 사용해서 동일 매핑의 충돌 문제를 피할 수 있다. 이렇게 큰 가상 주소 공간을 예약하려면 가상 주소 공간이 물리 메모리 크기보다 훨씬 커야한다는 조건이 있다. `x86_64`은 256TB 크기의 주소 공간을 가지는 48비트 주소를 사용하므로 이 조건은 문제가 되지 않는다.
 
@@ -48,7 +48,7 @@
 
 페이지 테이블 프레임 뿐만 아니라 완전한 물리 메모리에 매핑해서 문제를 해결할 수 있다.
 
-![Map the Complete Physical Memory](https://user-images.githubusercontent.com/22253556/82216242-a652c900-9953-11ea-85f4-2d355fbb1af2.png)
+![Map the Complete Physical Memory](https://os.phil-opp.com/paging-implementation/map-complete-physical-memory.svg)
 
 이 방식을 사용하면 커널이 다른 주소 공간의 페이지 테이블 프레임을 포함한 임의의 물리 메모리에 접근할 수 있다. 예약된 가상 메모리 범위 크기는 그대로이고 매핑되지 않은 페이지만 포함되지 않는다.
 
@@ -60,7 +60,7 @@
 
 물리 메모리가 매우 작은 장치는 **페이지 테이블 프레임에 접근할 때만 일시적으로 매핑**할 수 있다. 동일 매핑된 레벨 1 테이블 한 개만 있으면 임시 매핑을 생성할 수 있다.
 
-![Temporary Mapping](https://user-images.githubusercontent.com/22253556/82217822-efa41800-9955-11ea-94f1-7df9c9b53228.png)
+![Temporary Mapping](https://os.phil-opp.com/paging-implementation/temporarily-mapped-page-tables.svg)
 
 그림 속 레벨 1 테이블은 가상 주소 공간의 처음 2MB만 제어한다. CR3 레지스터와 뒤따르는 레벨 4, 3, 2 페이지 테이블의 0번 항목에서 도달할 수 있기 때문이다. 인덱스 8번 항목은 `32KB` 주소의 가상 페이지를 `32KB` 주소의 물리 프레임에 매핑해서 레벨 1 테이블 자체를 동일 매핑한다. 그림에서 `32KB`에서 수평 화살표로 동일 매핑된 것을 확인할 수 있다.
 

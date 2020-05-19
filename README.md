@@ -95,6 +95,7 @@
 - [더블 폴트](OS/Double-Faults.md)
 - [하드웨어 인터럽트](OS/Hardware-Interrupts.md)
 - [페이징 개론](OS/Introduction-to-Paging.md)
+- [페이징 구현하기](OS/Paging-Implementation.md)
 
 ## Rust
 

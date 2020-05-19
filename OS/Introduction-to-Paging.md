@@ -7,6 +7,7 @@
 프로그램 간 분리는 운영 체제 반드시 해야 하는 일이다. 예를 들어, 웹 브라우저가 텍스트 에디터를 간섭하는 일이 없어야 한다. 이를 위해 운영 체제는 하드웨어 기능을 사용해서 프로세스가 소유한 메모리 구역을 다른 프로세스가 접근하지 못하게 한다. 하드웨어나 운영 체제 구현에 따라 프로그램 분리하는 방법이 다양하다.
 
 예를 들어, 임베디드 시스템에 사용되는 ARM Cortex-M 프로세서는 [메모리 보호 장치](https://developer.arm.com/docs/ddi0337/e/memory-protection-unit/about-the-mpu) (Memory Protection Unit, MPU)가 있어서 메모리 구역에 다른 접근 권한(ex, 접근 불가, 읽기 전용, 읽고 쓰기 가능)을 갖도록 작은 숫자(ex, 8)를 지정할 수 있다. 메모리에 접근할 때마다 MPU가 메모리 구역 안에 있는 주소를 올바른 접근 권한으로 사용했는지 확인하고, 그렇지 않은 경우 예외를 발생시킨다. 프로세스를 전환할 때마다 구역과 접근 권한을 바꿔서 운영 체제가 각 프로세스가 자신의 메모리에 접근하도록 한다. 이런 식으로 프로세스를 서로 분리한다.
+console.log(ARM)
 
 x86은 [세그먼테이션](https://ko.wikipedia.org/wiki/X86_%EB%A9%94%EB%AA%A8%EB%A6%AC_%EB%B6%84%ED%95%A0)과 [페이징](https://ko.wikipedia.org/wiki/%ED%8E%98%EC%9D%B4%EC%A7%95), 이 두 가지 메모리 보호 방식을 지원한다.
 
@@ -28,7 +29,7 @@ CPU는 메모리 접근 방식에 따라 세그먼트 레지스터를 자동으�
 
 같은 프로그램 두 개를 동시에 돌릴 때 이런 특성이 유용하게 쓰인다.
 
-![virtual-memory](https://user-images.githubusercontent.com/22253556/81063454-c7a6c480-8f12-11ea-8e7a-c9fe6993172a.png)
+![virtual-memory](https://os.phil-opp.com/paging-introduction/segmentation-same-program-twice.svg)
 
 위 그림에서 같은 프로그램 두 개가 서로 다른 변환 함수를 가지고 작동 중이다. 첫 번째 인스턴스는 세그먼트 오프셋이 100이므로 0-150 사이 가상 주소는 100-250 사이 실제 주소로 변환된다. 두 번째 인스턴스는 오프셋이 300이므로 0-150 사이 가상 주소는 300-450 사이 실제 주소로 변환된다. 가상 메모리 기법은 두 프로그램이 같은 코드와 같은 가상 주소를 사용하면서 서로 간섭이 없도록 한다.
 
@@ -38,13 +39,13 @@ CPU는 메모리 접근 방식에 따라 세그먼트 레지스터를 자동으�
 
 가상 주소와 물리 주소를 다르게 두는 것이 세그먼테이션의 강력한 기능이지만, 파편화 문제도 뒤따른다.
 
-![fragmetation]](https://user-images.githubusercontent.com/22253556/81064384-9202db00-8f14-11ea-98ff-90b0e2a0d2cb.png)
+![fragmetation](https://os.phil-opp.com/paging-introduction/segmentation-fragmentation.svg)
 
 위 그림을 보면, 충분한 공간이 있어도 프로그램의 세 번째 인스턴스를 가상 메모리에 겹치지 않게 놓을 방법이 없다. 메모리가 연속되어 있어야 하는 것과 비어있는 작은 메모리 공간을 사용할 수 없는 것이 문제다.
 
 파편화를 해결하기 위해, 실행을 멈추고, 사용 중인 메모리끼리 붙여놓고, 오프셋을 변경하고 다시 실행하는 방법이 있다.
 
-![brute-force-fragmetation-solution](https://user-images.githubusercontent.com/22253556/81065191-fc684b00-8f15-11ea-9f59-7653bf8b414b.png)
+![brute-force-fragmetation-solution](https://os.phil-opp.com/paging-introduction/paging-fragmentation.svg)
 
 이제 연속된 공간이 충분히 있어서 세 번째 인스턴스를 실행할 수 있다.
 
@@ -58,7 +59,7 @@ CPU는 메모리 접근 방식에 따라 세그먼트 레지스터를 자동으�
 
 페이징을 사용하면 메모리 공간이 파편화되지 않는다.
 
-![paging](https://user-images.githubusercontent.com/22253556/81172970-36028a00-8fda-11ea-9ef6-af1318ea370e.png)
+![paging](https://os.phil-opp.com/paging-introduction/paging-page-tables.svg)
 
 위 그림에서 메모리 구역이 페이지 사이즈가 50 바이트인 페이지 3개로 나눠졌다. 각 페이지는 개별적으로 프레임에 매핑됐다. 덕분에 연속된 가상 메모리 공간을 연속되지 않은 물리 프레임에 매핑할 수 있게 됐다. 페이징을 사용하면 조각 모음을 하지 않아도 프로그램 인스턴스 세 개를 실행할 수 있다.
 
@@ -76,7 +77,7 @@ CPU는 메모리 접근 방식에 따라 세그먼트 레지스터를 자동으�
 
 위의 예시의 페이지 테이블은 다음과 같이 생겼다.
 
-![page-table](https://user-images.githubusercontent.com/22253556/81176329-fc348200-8fdf-11ea-885a-2adf1f3d85de.png)
+![page-table](https://os.phil-opp.com/paging-introduction/paging-page-tables.svg)
 
 프로그램은 각자의 페이지 테이블을 갖는다. `x86` CPU는 현재 사용 중인 테이블을 `CR3` 레지스터에 저장한다. 운영 체제는 프로그램을 실행하기 전에 알맞은 페이지 테이블을 가리키는 포인터를 `CR3` 레지스터에 저장해야 한다.
 
@@ -88,7 +89,7 @@ CPU는 메모리 접근 방식에 따라 세그먼트 레지스터를 자동으�
 
 1단짜리 페이지 테이블은 메모리가 커지면 테이블도 커져서 메모리를 낭비하는 문제가 생긴다. 예를 들어, 프로그램이 가상 페이지 `0`, `1,000,000`, `1,000,050`, `1,000,100`번을 사용한다고 쳐보자.
 
-![multilevel-page-table](https://user-images.githubusercontent.com/22253556/81292552-c1e1e800-90a6-11ea-8cfb-b05506cc77c2.png)
+![multilevel-page-table](https://os.phil-opp.com/paging-introduction/single-level-page-table.svg)
 
 프로그램은 물리 페이지를 4개만 사용하지만, 페이지 테이블은 백만 개가 넘는 항목을 갖게 된다. 그렇다고 빈 항목을 테이블에서 뺄 수 없다. 그럴 경우 CPU가 페이지를 변환할 때 알맞은 항목으로 바로 접근할 수 없기 때문이다. (네 번째 페이지가 네 번째 항목을 사용하는지 보장 못 함)
 
@@ -96,7 +97,7 @@ CPU는 메모리 접근 방식에 따라 세그먼트 레지스터를 자동으�
 
 예를 들어, 레벨 1 페이지 테이블은 크기가 `10,000`인 구역만 담당하게 한다.
 
-![2-level-page-table](https://user-images.githubusercontent.com/22253556/81294202-81379e00-90a9-11ea-811c-cb5baf933e90.png)
+![2-level-page-table](https://os.phil-opp.com/paging-introduction/multilevel-page-table.svg)
 
 페이지 0은 첫 번째 `10,000` 바이트 구역에 해당하므로 레벨 2 페이지 테이블의 첫 번째 항목을 사용한다. 이 항목은 레빌 1 페이지 테이블인 T1을 가리킨다. T1은 페이지 0이 프레임 0을 가리키고 있음을 알려준다.
 
@@ -114,7 +115,7 @@ x86_64 아키텍처는 4단 페이지 테이블과 4KB 크기의 페이지를 �
 
 가상 주소에서 레벨에 맞는 페이지 테이블 인덱스를 바로 알아낼 수 있다.
 
-![page-table-index]](https://user-images.githubusercontent.com/22253556/81473219-ecaf7600-9237-11ea-89aa-a387e3f5861b.png)
+![page-table-index](https://os.phil-opp.com/paging-introduction/x86_64-table-indices-from-address.svg)
 
 각 테이블 인덱스는 9 비트로 구성되며, 이에 맞게 각 테이블은 2^9 = 512개의 항목을 갖는다. 최하위 12 비트는 4KB 크기(2^12 bytes= 4KB)의 페이지 내부의 오프셋을 나타낸다. 48부터 64비트는 버려진다. 즉, x86_64는 48 비트 주소만 지원하므로 실제로 64 비트가 아니다.
 
@@ -126,13 +127,13 @@ x86_64 아키텍처는 4단 페이지 테이블과 4KB 크기의 페이지를 �
 
 예제를 통해 변환 과정의 작동 방식을 자세히 알아본다.
 
-![example-translation](https://user-images.githubusercontent.com/22253556/81473599-7d875100-923a-11ea-9d68-717d0c8c8860.png)
+![example-translation](https://os.phil-opp.com/paging-introduction/x86_64-page-table-translation.svg)
 
 현재 활성화된 레벨 4 페이지 테이블(4단 페이지 테이블 루트)의 물리 주소는 `CR3` 레지스터에 저장된다. 그런 다음 각 페이지 테이블 항목은 다음 레벨 테이블의 물리 프레임을 가리킨다. 레벨 1 테이블의 항목은 매핑된 프레임을 가리킨다. 페이지 테이블의 모든 주소는 가상이 아닌 실제 주소다. 가상 주소를 썼다면 CPU가 해당 주소도 변환해야 하므로 무한 재귀가 발생할 수도 있다.
 
 위의 페이지 테이블 계층은 파랗게 표시된 페이지 두 개를 매핑한다. 페이지 테이블 인덱스에서 두 페이지의 가상 주소가 `0x803FE7F000`와 `0x803FE00000`임을 알 수 있다. 프로그램이 `0x803FE7F5CE`번 주소를 읽으려고 할 때 어떤 일이 일어나는지 알아보자. 우선, 주소를 이진수로 바꿔서 주소의 페이지 테이블 인덱스와 페이지 오프셋을 정한다.
 
-![binary-virtual-address]](https://user-images.githubusercontent.com/22253556/81473780-e8855780-923b-11ea-8230-86bec74d9443.png)
+![binary-virtual-address](https://os.phil-opp.com/paging-introduction/x86_64-page-table-translation-addresses.png)
 
 인덱스를 가지로 페이지 테이블 계층을 따라 주소에 매핑된 프레임을 알아낼 수 있다.
 
@@ -143,7 +144,7 @@ x86_64 아키텍처는 4단 페이지 테이블과 4KB 크기의 페이지를 �
 - 레벨 1 테이블의 인덱스가 127인 항목을 보고 해당 페이지가 12KB(16진수로 0x3000) 프레임에 매핑되어 있음을 알 수 있다.
 - 마지막으로, 프레임 주소에 페이지 오프셋을 더해서 물리 주소 0x3000 + 0x5ce = 0x35ce를 알아낸다.
 
-![translation](https://user-images.githubusercontent.com/22253556/81491081-bb30bc00-92c4-11ea-9aee-40a6adb49dd3.png)
+![translation](https://os.phil-opp.com/paging-introduction/x86_64-page-table-translation-steps.svg)
 
 레벨 1 테이블 내부의 페이지는 읽기 전용을 뜻하는 `r` 권한을 갖는다. 권한을 하드웨어가 강제하기 때문에 해당 페이지에 쓰기를 시도하면 예외가 발생한다. 상위 레벨 페이지의 권한이 하위 레벨 테이블의 가능한 권한을 제한하므로 레벨 3 항목을 읽기 전용으로 설정하면 하위 레벨이 읽기/쓰기 권한을 지정해도 해당 항목에 쓸 수 없다.
 
