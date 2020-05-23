@@ -108,4 +108,46 @@
 
 이 개념을 이해하는데 시간이 걸릴 수 있지만, 재귀 테이블은 실제로 잘 작동하는 방식이다.
 
-다음 단에서 재귀 항목을 한 번 이상 따라가기 위해 가상 주소를 구성하는 방법을 설명한다. 구현하는 커널에는 재귀 페이징을 사용하지 않으므로 꼭 읽을 필요는 없다. 흥미가 있다면 "주소 계산"을 클릭해서 펼쳐보면 된다.
+다음 단에서 재귀 항목을 한 번 이상 따라가기 위해 가상 주소를 구성하는 방법을 설명한다. 구현하는 커널에는 재귀 페이징을 사용하지 않으므로 꼭 읽을 필요는 없다. 흥미가 있다면 "주소 계산하기"를 클릭해서 펼쳐보면 된다.
+
+<details>
+  <summary>주소 계산하기</summary>
+  
+실제 변환 전에 한 번 이상 재귀 항목을 따라가면 어떤 레벨의 테이블이든 접근 가능하다. 각 레벨의 테이블에 접근하는 모든 인덱스는 가상 주소에서 바로 알아낼 수 있으므로, 특수한 가상 주소를 만들어서 재귀 페이지 테이블 기법에 사용한다. 페이지 테이블 인덱스는 다음과 같은 주소에서 생성된다.
+
+![address calculation](https://os.phil-opp.com/paging-introduction/x86_64-table-indices-from-address.svg)
+
+특정한 페이지에 매핑하는 레벨 1 페이지에 접근하고 싶다면, 레벨 4, 3, 2 테이블의 인덱스에 접근하기 전에 재귀 항목을 한 번 따라가야 한다. 이를 위해 각 주소 블록을 한 블록 씩 오른쪽으로 옮기고 레벨 4 인덱스 자리엔 재귀 항목의 인덱스를 설정한다.
+![access level 1 table](https://os.phil-opp.com/paging-implementation/table-indices-from-address-recursive-level-1.svg)
+
+레벨 2 테이블에 접근하고 싶으면, 각 인덱스 블록을 두 블록 씩 오른쪽으로 옮기고 레벨 4와 3 인덱스가 있던 자리엔 재귀 항목의 인덱스를 설정한다.
+
+![access level 2 table](https://os.phil-opp.com/paging-implementation/table-indices-from-address-recursive-level-2.svg)
+
+레벨 3 테이블에 접근하기 위해서는 각 블록을 세 블록 씩 오른쪽을 옮기고 레벨 4, 3, 2 인덱스 자리엔 재귀 항목을 설정한다.
+
+![access level 3 table](https://os.phil-opp.com/paging-implementation/table-indices-from-address-recursive-level-3.svg)
+
+마지막으로, 레벨 4 테이블에 접근하기 위해 각 블록을 4 블록 씩 오른쪽으로 옮기고 오프셋을 제외한 모든 주소 블록에 재귀 항목을 설정한다.
+
+![access level 4 table](https://os.phil-opp.com/paging-implementation/table-indices-from-address-recursive-level-4.svg)
+
+이제 4가지 레벨 모두의 페이지 테이블에 접근하는데 사용할 가상 주소를 계산할 수 있다. 게다가, 인덱스에 페이지 테이블 항목의 크기인 8을 곱해서 특정 페이지 테이블 항목을 정확하게 가리키는 주소를 계산할 수도 있다.
+
+아래 테이블에 각 프레임에 접근하는 주소 구조를 요약해 놓았다.
+
+| 가상 주소 종류      | 주소 구조 (8진수)              |
+| ------------------- | ------------------------------ |
+| Page                | 0o_SSSSSS_AAA_BBB_CCC_DDD_EEEE |
+| Level 1 Table Entry | 0o_SSSSSS_RRR_AAA_BBB_CCC_DDDD |
+| Level 2 Table Entry | 0o_SSSSSS_RRR_RRR_AAA_BBB_CCCC |
+| Level 3 Table Entry | 0o_SSSSSS_RRR_RRR_RRR_AAA_BBBB |
+| Level 4 Table Entry | 0o_SSSSSS_RRR_RRR_RRR_RRR_AAAA |
+
+`AAA`는 매핑된 프레임의 레벨 4 인덱스, `BBB`는 레벨 3 인덱스, `CCC`는 레벨 2 인덱스, `DDD`는 레벨 1 인덱스, `EEEE`는 오프셋이다. `RRR`은 재귀 항목의 인덱스이다. 인덱스 (3 자리)를 오프셋 (4 자리)으로 변환하려면 8 (페이지 테이블 항목의 크기)을 곱하면 된다. 이 오프셋을 사용하면 결과 주소가 해당 페이지 테이블 항목을 직접 가리킨다.
+
+`SSSSSS`는 부호 확장 비트이고, 각 비트는 47번 비트의 복사본이다. 이전 글에서 설명했 듯이, 부호 확장 비트는 x86_64 아키텍처에서 5단 페이지 테이블을 사용해서 더 큰 주소 공간을 나타날 때 사용한다.
+
+문자 하나가 3비트를 나타내는 8진수를 사용해서 주소를 표현하면 9비트를 사용하는 각 페이지 테이블의 인덱스를 구별하기 쉽다. 한 문자가 4비트를 나타내는 16 진법으로 명확하게 주소를 표현하기 힘드므로 8진수를 사용했다.
+
+</details>
