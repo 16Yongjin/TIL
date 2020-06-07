@@ -90,6 +90,7 @@
 ## Node.js
 
 - [How to Use Node.js C++ Addons](Node.js/cpp-addon-tutorial.md)
+- [일렉트론에서 COCOSSD 모델 오프라인으로 사용하기](Node.js/electron+tfjs.md)
 
 ## OS
 
