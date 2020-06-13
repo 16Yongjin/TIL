@@ -67,25 +67,22 @@ const readFile = promisify(fs.readFile);
 // 앞에 붙는 :// 을 지운다.
 const removeProtocol = (url: string) => url.replace(/(^\w+:|^)\/\//, "");
 
-// file:// 프로토콜 지원 추가
-// @ts-ignore
-globalThis.fetch = async (url: string, init: RequestInit | undefined) => {
-  // url이 http면 그대로 fetch 사용
-  if (!url.startsWith("file://")) {
-    return fetch(url, init);
-  }
-
-  // 아니면 파일 읽기
-  const path = removeProtocol(url);
-  const file = await readFile(path);
+// 파일을 읽고 fetch의 Response 형식으로 반환함
+const fetchFile = async (url: string) => {
+  const path = removeProtocol(url)
+  const file = await readFile(path)
   const contentType =
-    url.indexOf(".json") !== -1
-      ? "application/json"
-      : "application/octet-stream";
-  const headers = { "content-type": contentType };
-  // fetch API인 척 Response 객체 반환
-  return new Response(file, { headers });
-};
+    url.indexOf('.json') !== -1
+      ? 'application/json'
+      : 'application/octet-stream'
+  const headers = { 'content-type': contentType }
+  return new Response(file, { headers })
+}
+
+// @ts-ignore
+// 이제 fetch 시 file 프로토콜도 지원함
+globalThis.fetch = async (url: string, init?: RequestInit | undefined) =>
+  url.startsWith('file://') ? fetchFile(url) : fetch(url, init)
 
 // /public/cocossd/model.json이 모델 파일 위치임
 const modelUrl = `file://${__static}/cocossd/model.json`;
