@@ -32,6 +32,10 @@
 
 - [유용한 '데이터 시각화' 정보 사이트 모음](http://www.bloter.net/archives/369220)
 
+- [13 Security Tips For Frontend](https://medium.com/better-programming/frontend-app-security-439797f57892)
+
+- [10 JavaScript Quiz Questions and Answers to Sharpen Your Skills](https://typeofnan.dev/10-javascript-quiz-questions-and-answers/)
+
 ## 테스팅
 
 - [javascript-testing-best-practices/readme.kr.md at master · goldbergyoni/javascript-testing-best-practices](https://github.com/goldbergyoni/javascript-testing-best-practices/blob/master/readme.kr.md)
@@ -40,9 +44,17 @@
 
 - [Vue Testing handbook](https://lmiller1990.github.io/vue-testing-handbook/ko)
 
+## 아키텍처
+
+- [Node.js 계층 구조 설계 및 환경 변수 관리](https://jhyeok.com/node-backend-structure/)
+
 ## 디자인
 
 - [Mobbin: the latest mobile design patterns](https://mobbin.design/)
+
+- [섹션 나누기용 그림 생성기](https://www.shapedivider.app/)
+
+- [Blush, Illustrations for everyone](https://blush.design/)
 
 ## DB
 
@@ -51,6 +63,9 @@
 - [Database schema templates by DrawSQL](https://drawsql.app/templates)
 
 - [브라우저 SQL 튜토리얼](https://selectstarsql.com/)
+
+- [Writing a SQL database from scratch in go](https://notes.eatonphil.com/database-basics.html)
+
 
 ## 유틸리티
 
@@ -65,3 +80,7 @@
 - [Roam: Why I Love It and How I Use It - Nat Eliason](https://www.nateliason.com/blog/roam)
 
 - [Sharedrop, 동일 네트워크 상 파일 전송](https://www.sharedrop.io/)
+
+- [피나링 면접팁 / 자소서팁](https://www.notion.so/5b1bcb7a87c24ab6b36d87959371ff19)
+
+- [이메일로 웹 페이지 생성하기](https://www.publishthis.email/)

@@ -1,4 +1,4 @@
-# \$x 콘솔 유틸리티 구현
+ # \$x 콘솔 유틸리티 구현
 
 ```javascript
 function $x(xpath) {
