@@ -6,6 +6,8 @@
 
 - [Circa 검색엔진 아키텍처](https://0x65.dev/blog/2019-12-14/the-architecture-of-a-large-scale-web-search-engine-circa-2019.html)
 
+- [카이스트 프로그래밍 언어 보조 자료](https://hjaem.info/articles/main)
+
 ## 책
 
 - [마츠모토 유키히로의 프로그래밍 언어 만들기](http://www.acornpub.co.kr/book/language-structure)
@@ -24,6 +26,8 @@
 
 - ✔ [견고한 node.js 프로젝트 설계하기](https://velog.io/@hopsprings2/견고한-node.js-프로젝트-아키텍쳐-설계하기)
 
+- [웹 스트리밍 작동방식](https://medium.com/canal-tech/how-video-streaming-works-on-the-web-an-introduction-7919739f7e1)
+
 ## 카탈로그
 
 - [CSS Layout](https://csslayout.io/)
@@ -35,6 +39,10 @@
 - [13 Security Tips For Frontend](https://medium.com/better-programming/frontend-app-security-439797f57892)
 
 - [10 JavaScript Quiz Questions and Answers to Sharpen Your Skills](https://typeofnan.dev/10-javascript-quiz-questions-and-answers/)
+
+- [키워드와 색상으로 UI 검색](https://search.muz.li/)
+
+- [Naver FE 뉴스](https://github.com/naver/fe-news)
 
 ## 테스팅
 
