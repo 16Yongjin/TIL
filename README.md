@@ -144,6 +144,7 @@
 
 ## Ideas
 
+- [2020 Dream Desk Setup](Ideas/2020-dream-desk-setup.md)
 - [죽을 때까지 프로그래머로 사는 법](Ideas/죽을-때까지-프로그래머로-사는-법.md)
 - [활성 유저 확인법](Ideas/check-live-user.md)
 - [etc](Ideas/etc.md)
