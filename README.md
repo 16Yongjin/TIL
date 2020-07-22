@@ -18,6 +18,7 @@
 - [Node.js](#node)
 - [OS](#os)
 - [Project](#project)
+- [React](#react)
 - [Rust](#rust)
 - [Ideas](#ideas)
 - [Software](#software)
@@ -104,6 +105,14 @@
 - [페이징 개론](OS/Introduction-to-Paging.md)
 - [페이징 구현하기](OS/Paging-Implementation.md)
 
+## Project
+
+- [네이버 AI 버닝데이 준비](Project/naver-ai-burning.md)
+
+## React
+
+- [useEffect](React/useEffect.md)
+
 ## Rust
 
 - [WSL 설정](Rust/wsl-setup.md)
@@ -137,10 +146,6 @@
 - [고급 타입](Rust/advanced-types.md)
 - [고급 함수와 클로저](Rust/advanced-functions-and-closures.md)
 - [멀티 스레딩 웹서버](Rust/multi-thread-web-server.md)
-
-## Project
-
-- [네이버 AI 버닝데이 준비](Project/naver-ai-burning.md)
 
 ## Ideas
 
