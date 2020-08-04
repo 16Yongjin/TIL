@@ -82,6 +82,7 @@
 - [크롬 콘솔 유틸리티 함수들](Javascript/chrome-console-utilities.md)
 - [Get better at JavaScript with just JavaScript](Javascript/Get-better-at-JavaScript-with-just-JavaScript.md)
 - [Little Lisp Interpreter](Javascript/Little-Lisp-Interpreter.md)
+- [scrollIntoView 사용법](Javascript/scrollIntoView.md)
 - [시스템 다크 모드 확인하기](Javascript/System-Dark-Mode-Detection.md)
 
 ## Linux
