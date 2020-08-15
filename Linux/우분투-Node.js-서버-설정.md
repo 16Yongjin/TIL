@@ -56,6 +56,18 @@ curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 sudo apt-get install nodejs
 ```
 
+## npm install 네이티브 모듈 빌드 실패 시
+
+```
+sudo apt-get install build-essential
+```
+
+## root에서 npm 실행 시
+
+```
+npm install --unsafe-perm
+```
+
 ## postgres 설정
 
 설치
