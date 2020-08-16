@@ -65,6 +65,8 @@
 
 - 객체 지향으로 구조화 (+ 다이어그램 추가)
 
+![SBB-diagram](https://user-images.githubusercontent.com/22253556/90336638-1ab30c00-e018-11ea-9dde-f204c7c1cc08.png)
+
 - 파티클 시스템
 
 - 후임이 당직 때 10시간 동안 플레이해서 997점 달성했다. (내가 본 최고점수)
@@ -81,7 +83,136 @@
 
   - 코드도 짧아서 경로 계산만 100줄 내외
 
-- CSS 변수를 사용했고 이 변수에 다른 변수들이 의존하게 했다.
+  <details>
+    <summary>경로 계산 코드</summary>
+
+  ```js
+
+  calcPath () {
+      const canForward = ([x, y]) => !table[y][x] || (table[y][x].team !== this.team && 'stop');
+      const isEmptyPlace = ([x, y]) => !table[y][x];
+      const isEnemy = ([x, y]) => table[y][x] && table[y][x].team !== this.team;
+      const isEmptyOrEnemy = path => isEmptyPlace(path) || isEnemy(path);
+      const toAbsoultePos = ([x, y]) => [this.x + x, this.y + y];
+
+      if (this.text === '兵') {
+          const paths = [
+              [[-1, 0], [1, 0], [0, 1]].map(toAbsoultePos).filter(isInBoard).filter(canForward),
+              isIn([[3, 7], [5, 7]])(this.pos) ? [[4, 8]].filter(canForward) : [],
+              this.posIs([4, 8]) ? [[3, 9], [5, 9]].filter(canForward) : [],
+          ].flat()
+
+          return paths
+      }
+
+       if (this.text === '卒') {
+          const paths = [
+              [[-1, 0], [1, 0], [0, -1]].map(toAbsoultePos).filter(isInBoard).filter(canForward),
+              isIn([[3, 2], [5, 2]])(this.pos) ? [[4, 1]].filter(canForward) : [],
+              this.posIs([4, 1]) ? [[3, 0], [5, 0]].filter(canForward) : [],
+          ].flat()
+
+          return paths
+      }
+
+      else if (this.text === '漢' || this.text === '楚' || this.text === '士') {
+          const isInPalace = this.team === 'red' ?
+              ([x, y]) => 3 <= x && x <= 5 && 0 <= y && y <= 2 :
+              ([x, y]) => 3 <= x && x <= 5 && 7 <= y && y <= 9;
+
+          const isPalaceSideMiddle = this.team === 'red' ?
+              ([x, y]) => (y === 1 && (x === 3 || x === 5)) || (x === 4 && (y === 0 || y === 2)) :
+              ([x, y]) => (y === 8 && (x === 3 || x === 5)) || (x === 4 && (y === 7 || y === 9))
+
+          const paths = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]]
+              .map(toAbsoultePos)
+              .filter(isInPalace)
+              .filter(([x, y]) => !isPalaceSideMiddle(this.pos) || !isPalaceSideMiddle([x, y]))
+              .filter(canForward)
+
+          return paths
+      }
+
+      else if (this.text === '車') {
+          const paths = [
+              range(this.x - 1, 0).map(x => [x, this.y]).filter(isInBoard).takeWhile(canForward),
+              range(this.x + 1, 8).map(x => [x, this.y]).filter(isInBoard).takeWhile(canForward),
+              range(this.y - 1, 0).map(y => [this.x, y]).filter(isInBoard).takeWhile(canForward),
+              range(this.y + 1, 9).map(y => [this.x, y]).filter(isInBoard).takeWhile(canForward),
+              this.posIs([3, 7]) ? [[4, 8], [5, 9]].takeWhile(canForward) : [],
+              this.posIs([3, 9]) ? [[4, 8], [5, 7]].takeWhile(canForward) : [],
+              this.posIs([5, 7]) ? [[4, 8], [3, 9]].takeWhile(canForward) : [],
+              this.posIs([5, 9]) ? [[4, 8], [3, 7]].takeWhile(canForward) : [],
+              this.posIs([4, 8]) ? [[3, 7], [3, 9], [5, 7], [5, 9]].filter(canForward) : [],
+              this.posIs([3, 0]) ? [[4, 1], [5, 2]].takeWhile(canForward) : [],
+              this.posIs([3, 2]) ? [[4, 1], [5, 0]].takeWhile(canForward) : [],
+              this.posIs([5, 0]) ? [[4, 1], [3, 2]].takeWhile(canForward) : [],
+              this.posIs([5, 2]) ? [[4, 1], [3, 0]].takeWhile(canForward) : [],
+              this.posIs([4, 1]) ? [[3, 0], [3, 2], [5, 0], [5, 2]].filter(canForward) : [],
+          ].flat()
+
+          return paths
+      }
+
+      else if (this.text === "包") {
+          const calcPoPath = pathList => pathList
+              .filter(isInBoard)
+              .skipWhile(([x, y]) => !table[y][x] || (table[y][x] && table[y][x].text === '包'  && 'skipAll'))
+              .slice(1)
+              .takeWhile(([x, y]) => !table[y][x] || table[y][x].text !== '包' && (table[y][x].team !== this.team && 'stop'));
+
+          const paths = [
+              calcPoPath(range(this.y - 1, 0).map(y => [this.x, y])),
+              calcPoPath(range(this.y + 1, 9).map(y => [this.x, y])),
+              calcPoPath(range(this.x - 1, 0).map(x => [x, this.y])),
+              calcPoPath(range(this.x + 1, 8).map(x => [x, this.y])),
+              this.posIs([3, 7]) ? calcPoPath([[4, 8], [5, 9]]) : [],
+              this.posIs([3, 9]) ? calcPoPath([[4, 8], [5, 7]]) : [],
+              this.posIs([5, 7]) ? calcPoPath([[4, 8], [3, 9]]) : [],
+              this.posIs([5, 9]) ? calcPoPath([[4, 8], [3, 7]]) : [],
+              this.posIs([3, 0]) ? calcPoPath([[4, 1], [5, 2]]) : [],
+              this.posIs([3, 2]) ? calcPoPath([[4, 1], [5, 0]]) : [],
+              this.posIs([5, 0]) ? calcPoPath([[4, 1], [3, 2]]) : [],
+              this.posIs([5, 2]) ? calcPoPath([[4, 1], [3, 0]]) : [],
+          ].flat()
+
+          return paths
+      }
+
+      else if (this.text === '馬') {
+          const paths = [[0, -1], [-1, 0], [0, 1], [1, 0]]
+              .flatMap(p => [[p, p.map(i => i || -1)], [p, p.map(i => i || 1)]])
+              .map(([[x1, y1], [x2, y2]]) =>  [[x1, y1], [x1 + x2, y1 + y2]])
+              .map(ps => ps.map(toAbsoultePos))
+              .filter(ps => ps.every(isInBoard))
+              .filter(([[x1, y1], [x2, y2]]) => isEmptyPlace([x1, y1]) && isEmptyOrEnemy([x2, y2]))
+              .map(i => i[1])
+
+          return paths
+      }
+
+      else if (this.text === '象') {
+           const paths = [[0, -1], [-1, 0], [0, 1], [1, 0]]
+              .flatMap(p => [[p, p.map(i => i || -1), p.map(i => i || -1)], [p, p.map(i => i || 1), p.map(i => i || 1)]])
+              .map(([[x1, y1], [x2, y2], [x3, y3]]) => [[x1, y1], [x1 + x2, y1 + y2], [x1 + x2 + x3, y1 + y2 + y3]])
+              .map(ps => ps.map(toAbsoultePos))
+              .filter(ps => ps.every(isInBoard))
+              .filter(([[x1, y1], [x2, y2], [x3, y3]]) =>
+                  isEmptyPlace([x1, y1]) && isEmptyPlace([x2, y2]) && isEmptyOrEnemy([x3, y3])
+              )
+              .map(i => i[2])
+
+          return paths
+      }
+
+      return []
+  }
+
+  ```
+
+  </details>
+
+* CSS 변수를 사용했고 이 변수에 다른 변수들이 의존하게 했다.
 
   - 그래서 값 하나가 바뀌면 다른 값도 자동으로 바뀐다. (forward reference)
 
@@ -101,7 +232,57 @@
 
 - 승리 확인 부분도 함수형 프로그래밍으로 `map`, `filter`, `reduce`만 사용해서 구현했다.
 
-- 놓은 바둑알을 스택에 넣어서 물리기 기능을 추가했다.
+  <details>
+
+  <summary>승리 확인 코드</summary>
+
+  ```js
+  // 상하좌우+대각선 5줄이 모두 같은 색이면 승리
+
+  checkWin() {
+    const turnPositions = this.grid.flatMap((row, y) =>
+      row.reduce(
+        (acc, turn, x) => (turn === this.turn ? [...acc, [x, y]] : acc),
+        []
+      )
+    );
+
+    for (const [x, y] of turnPositions) {
+      const right = zip(range(x, x + 4), repeat5(y));
+      const left = zip(range(x, x - 4), repeat5(y));
+      const top = zip(repeat5(x), range(y, y + 4));
+      const bottom = zip(repeat5(x), range(y, y - 4));
+      const bottomLeft = zip(range(x, x + 4), range(y, y + 4));
+      const bottomRight = zip(range(x, x - 4), range(y, y + 4));
+      const topRight = zip(range(x, x + 4), range(y, y - 4));
+      const topLeft = zip(range(x, x - 4), range(y, y - 4));
+
+      const toTurn = ([x, y]) => this.grid[y][x];
+      const isSameTurn = (turn) => turn === this.turn;
+
+      const fiveInRow = !![
+        right,
+        left,
+        top,
+        bottom,
+        topRight,
+        topLeft,
+        bottomRight,
+        bottomLeft,
+      ]
+        .filter((poss) => poss.every(isInBoard))
+        .filter((poss) => poss.map(toTurn).every(isSameTurn)).length;
+
+      if (fiveInRow) {
+        return ui.win(this.turn);
+      }
+    }
+  }
+  ```
+
+  </details>
+
+* 놓은 바둑알을 스택에 넣어서 물리기 기능을 추가했다.
 
 &nbsp;
 
