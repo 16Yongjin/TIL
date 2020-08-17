@@ -39,22 +39,6 @@
 
 # 게임 소개
 
-## [미로 찾기](https://html-games.surge.sh/maze)
-
-&nbsp;
-
-<img alt="maze" src="https://user-images.githubusercontent.com/22253556/82049751-dac74a80-96f1-11ea-96d8-f3fff2f002a9.png" width="400px"/>
-
-- 리얼월드 알고리즘 1장 과제에서 DFS로 미로 생성 프로그램을 만들라고 해서 만들었다.
-
-  - 스택기반 DFS는 코드가 정말 짧다.
-
-- 프린터로 출력해서 펜으로 풀 수 있게 `인쇄하기` 버튼을 추가했다.
-
-- 사진처럼 방향키로 미로 탐색도 가능하다.
-
-&nbsp;
-
 ## [스와이프 벽돌 깨기](https://html-games.surge.sh/brick-breaker)
 
 <img alt="sbb" src="https://user-images.githubusercontent.com/22253556/81933996-2cf06900-9629-11ea-9b4e-31cee7502d29.png " width="400px"/>
@@ -63,7 +47,7 @@
 
 - 공 발사는 예전에 만들었던 당구 게임에서 착안
 
-- 객체 지향으로 구조화 (+ 다이어그램 추가)
+- 객체 지향으로 구조화
 
 ![SBB-diagram](https://user-images.githubusercontent.com/22253556/90336638-1ab30c00-e018-11ea-9dde-f204c7c1cc08.png)
 
@@ -290,9 +274,64 @@
 
 <img alt="tetris" src="https://user-images.githubusercontent.com/22253556/81934265-a5572a00-9629-11ea-9f8f-6d807f4f37cb.png" width="400px"/>
 
-- 100줄 테트리스의 로직과 데릭 아저씨의 테트리스의 UI를 합쳤다.
+- [100줄 테트리스](https://github.com/Alaricus/SimpleTetris)의 로직과 [데릭 아저씨의 테트리스](https://www.youtube.com/watch?v=QDp8BZbwOqk)의 UI를 합쳤다.
 
 - 거기에 다음 블록보기, 블록 한번에 내리기 기능 추가
+
+## [스택!](https://html-games.surge.sh/stack)
+
+<img alt="stack" src="https://user-images.githubusercontent.com/22253556/86470747-07edbc00-bd77-11ea-9457-aee76662e62c.png" width="400px"/>
+
+- [Pure CSS Stack](https://codepen.io/finnhvman/pen/xJRMJp)에 영감을 받음
+
+* 게임 로직 만드는 데 3일, 게임 종료 애니메이션을 만드는 데 일주일 걸렸다.
+
+![test](https://user-images.githubusercontent.com/22253556/90395078-d5054a80-e0ce-11ea-8153-4f5621c8bac7.gif)
+
+- 게임이 끝나면 화면이 서서히 축소되면서 지금까지 쌓아올린 블록을 보여준다.
+
+- 캔버스의 `scale`과 `translate`를 조정하는 게 힘들었다.
+
+&nbsp;
+
+## [미로 찾기](https://html-games.surge.sh/maze)
+
+&nbsp;
+
+<img alt="maze" src="https://user-images.githubusercontent.com/22253556/82049751-dac74a80-96f1-11ea-96d8-f3fff2f002a9.png" width="400px"/>
+
+- 리얼월드 알고리즘 1장 과제에서 DFS로 미로 생성 프로그램을 만들라고 해서 만들었다.
+
+  - 스택기반 DFS는 코드가 정말 짧다.
+
+  ```js
+  const initialCell = grid[0][0]
+
+  initialCell.visit()
+
+  const stack = [initialCell]
+
+  let currentCell
+
+  while (stack.length) {
+    currentCell = stack.pop()
+
+    const neighborCell = currentCell.randomNeighbor(grid)
+
+    if (neighborCell) {
+      stack.push(currentCell)
+      removeWall(currentCell, neighborCell)
+      neighborCell.visit()
+      stack.push(neighborCell)
+    }
+  }
+  ```
+
+- 프린터로 출력해서 펜으로 풀 수 있게 `인쇄하기` 버튼을 추가했다.
+
+- 사진처럼 방향키로 미로 탐색도 가능하다.
+
+&nbsp;
 
 ## [트렐로 클론](https://html-games.surge.sh/kanban)
 
@@ -310,33 +349,25 @@
 
 &nbsp;
 
-## [스택!](https://html-games.surge.sh/stack)
-
-<img alt="stack" src="https://user-images.githubusercontent.com/22253556/86470747-07edbc00-bd77-11ea-9457-aee76662e62c.png" width="400px"/>
-
-- CSS 스택에 영감을 받음
-
-* 게임 로직 만드는 데 3일, 게임 종료 애니메이션을 만드는 데 일주일 걸렸다.
-
-  - 게임이 끝나면 화면이 서서히 축소되면서 지금까지 쌓아올린 블록을 보여준다.
-
-  - 캔버스의 `scale`과 `translate`를 조정하는 게 힘들었다.
-
-&nbsp;
-
 ## 이외에
 
 ### 2048
+
+![image](https://user-images.githubusercontent.com/22253556/90393773-5dceb700-e0cc-11ea-88ba-0b190188ba81.png)
 
 싸지방에서 인쇄한 2048 코드를 하나하나 입력해서 구현했다.
 
 기존 프로토타입 기반 코드를 ES6 클래스 문법으로 바꾸고
 
-메서드는 함수형으로 리팩터링해서 1000줄짜리 코드를 700줄로 줄였다.
+메서드는 함수형으로 리팩터링했더니 1000줄짜리 코드가 700줄로 줄였다.
 
 ### 스네이크
 
+![image](https://user-images.githubusercontent.com/22253556/90393982-bf8f2100-e0cc-11ea-8087-08002e90aaea.png)
+
 33줄로 구현하는 리액트를 구현하고
+
+<script src="https://gist.github.com/16Yongjin/c5a8be2f7df740e76450d4dcb149dcf1.js"></script>
 
 블로그에 예제로 나온 스네이크 게임도 그대로 가져다가 구현했다.
 
