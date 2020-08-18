@@ -21,19 +21,19 @@
 
 ## 개발환경
 
-- 크롬 브라우저
+- 크롬 브라우저 + 메모장
 
-- 구글, 스택오버플로 사용 불가
+- Google, Stack Overflow 사용 불가
 
-- 라이브러리 사용 불가
+- NPM 라이브러리 사용 불가
 
-- IDE 사용 불가, 메모장 사용
+- IDE 사용 불가
 
 ## 제한사항
 
-게시판에 `hwp` 파일만 업로드할 수 있어서
+게시판에 파일 하나만 업로드할 수 있어서 모든 코드와 자원은 `html` 파일 하나에 들어가야 했다.
 
-배포 용이성을 위해 모든 코드와 자원은 `html` 파일 하나에 들어가야 했다.
+> 생각이 있었다면, 인트라넷에 있는 파이썬으로 css, js을 html 파일 하나로 모아주는 번들러를 만들었을 것 같다.
 
 &nbsp;
 
@@ -43,15 +43,33 @@
 
 <img alt="sbb" src="https://user-images.githubusercontent.com/22253556/81933996-2cf06900-9629-11ea-9b4e-31cee7502d29.png " width="400px"/>
 
-- 자바스크립트 버전은 세상에서 유일한 것 같다.
+### 자바스크립트 버전은 세상에서 유일한 것 같다.
 
-- 공 발사는 예전에 만들었던 당구 게임에서 착안
+- 있었으면 그냥 배꼈을 텐데, 없어서 게임을 백번 씩 플레이 해보고 코드, 로직 하나하나 직접 만들었다.
 
-- 객체 지향으로 구조화
+### 공 발사는 예전에 만들었던 당구 게임에서 착안했다.
+
+- 공 발사 각도는 두 점으로 각도를 구하는 아크 탄젠트(`Math.atan2`)를 사용해서 구했다.
+
+- 그 뒤로 공 벽 반사, 공과 벽돌 충돌 감지, 보너스 공, 벽돌과 바닥 충돌 감지 등의 기능을 하나씩 추가하다보니 완성했다.
+
+### 객체 지향으로 코드 구조화
 
 ![SBB-diagram](https://user-images.githubusercontent.com/22253556/90336638-1ab30c00-e018-11ea-9dde-f204c7c1cc08.png)
 
-- 파티클 시스템
+- 명령형으로 작성한 코드가 길어질 수록 이해하기 힘들고 스크롤만 위아래로 왔다갔다하는 일이 많아졌다.
+
+- 그래서 기능별로 코드를 쪼개고 계층화하고 권한을 위임했다.
+
+- `Ball`들은 `Balls` 클래스, `Brick`들은 `Bricks` 클래스에 들어있고
+
+- 각 요소 간 상호작용과 렌더링은 `GameManager` 클래스에서 담당한다.
+
+### 이외에
+
+- 파티클 시스템으로 `Brick`이 깨졌을 때 타격감 있는 이펙트를 제공한다.
+
+- 오리지날에 없는 공 내리기 기능으로 게임 진행 속도를 높였다.
 
 - 후임이 당직 때 10시간 동안 플레이해서 997점 달성했다. (내가 본 최고점수)
 
@@ -61,11 +79,11 @@
 
 <img alt="janggji" src="https://user-images.githubusercontent.com/22253556/81934129-645f1580-9629-11ea-89b9-5bdf53918eb2.png" width="400px"/>
 
-- 말의 경로를 함수형 프로그래밍으로 모델링했다.
+### 말의 경로를 **함수형 프로그래밍**으로 모델링했다.
 
-  - `for` 문이 없다.
+- `for` 문이 없다.
 
-  - 코드도 짧아서 경로 계산만 100줄 내외
+- 코드도 짧아서 경로 계산만 100줄 내외
 
   <details>
     <summary>경로 계산 코드</summary>
@@ -89,7 +107,7 @@
           return paths
       }
 
-       if (this.text === '卒') {
+      if (this.text === '卒') {
           const paths = [
               [[-1, 0], [1, 0], [0, -1]].map(toAbsoultePos).filter(isInBoard).filter(canForward),
               isIn([[3, 2], [5, 2]])(this.pos) ? [[4, 1]].filter(canForward) : [],
@@ -176,7 +194,7 @@
       }
 
       else if (this.text === '象') {
-           const paths = [[0, -1], [-1, 0], [0, 1], [1, 0]]
+          const paths = [[0, -1], [-1, 0], [0, 1], [1, 0]]
               .flatMap(p => [[p, p.map(i => i || -1), p.map(i => i || -1)], [p, p.map(i => i || 1), p.map(i => i || 1)]])
               .map(([[x1, y1], [x2, y2], [x3, y3]]) => [[x1, y1], [x1 + x2, y1 + y2], [x1 + x2 + x3, y1 + y2 + y3]])
               .map(ps => ps.map(toAbsoultePos))
@@ -196,11 +214,19 @@
 
   </details>
 
-* CSS 변수를 사용했고 이 변수에 다른 변수들이 의존하게 했다.
+### CSS 변수를 사용했고 이 변수에 다른 변수들이 의존하게 했다.
 
-  - 그래서 값 하나가 바뀌면 다른 값도 자동으로 바뀐다. (forward reference)
+- 그래서 값 하나가 바뀌면 다른 값도 자동으로 바뀐다. (forward reference)
 
-  - 하드 코딩을 했다면 값을 하나 바꾸기 위해 프로그램 전체를 뒤지며 나머지 값을 일일이 바꿔야 한다.
+- 하드 코딩을 했다면 값을 하나 바꾸기 위해 프로그램 전체를 뒤지며 나머지 값을 일일이 바꿔야 한다.
+
+### 인공지능과 대전하기 기능을 추가하려고 했다.
+
+자신에겐 유리하고 상대에겐 불리한 선택 경로를 찾는 미니맥스 알고리즘과 불필요한 경로는 무시하는 가지치기 알고리즘을 공부했다.
+
+한편, 프로그램의 모델 부분과 뷰 부분이 강결합돼있는 바람에 미니맥스 알고리즘을 구현하려면 코드를 다 갈아엎어야 돼서 포기했다.
+
+다음부턴 뷰와 모델 사이에 컨트롤러를 꼭 추가해야겠다.
 
 &nbsp;
 
@@ -208,65 +234,61 @@
 
 <img alt="gomoku" src="https://user-images.githubusercontent.com/22253556/81934177-7ccf3000-9629-11ea-8478-fb1894a93e84.png" width="400px"/>
 
-- 3시간만에 만들었다.
+### 3시간만에 만들었다.
 
-- 바둑 판자 / 바둑 선 / 바둑알 놓는 곳 3개로 레이어를 나눠서 쉽게 UI를 구현했다.
+장기를 만들고 나니 오목 정도는 식은 죽 먹기였다.
 
-  - 다른 구현을 보면 위 3개를 한 번에 하려다 보니 코드가 길고 보기 어렵다.
+### 바둑 판자 / 바둑 선 / 바둑알 놓는 곳 3개로 레이어를 나눠서 쉽게 UI를 구현했다.
 
-- 승리 확인 부분도 함수형 프로그래밍으로 `map`, `filter`, `reduce`만 사용해서 구현했다.
+- 다른 구현을 보면 위 3개를 한 번에 하려다 보니 코드가 길고 보기 어렵다.
+
+### 승리 확인 부분도 함수형 프로그래밍으로 `map`, `filter`, `reduce`만 사용해서 구현했다.
 
   <details>
 
   <summary>승리 확인 코드</summary>
 
-  ```js
-  // 상하좌우+대각선 5줄이 모두 같은 색이면 승리
+```js
+// 상하좌우+대각선 5줄이 모두 같은 색이면 승리
 
-  checkWin() {
-    const turnPositions = this.grid.flatMap((row, y) =>
-      row.reduce(
-        (acc, turn, x) => (turn === this.turn ? [...acc, [x, y]] : acc),
-        []
-      )
-    );
+checkWin() {
+  const turnPositions = this.grid.flatMap((row, y) =>
+    row.reduce(
+      (acc, turn, x) => (turn === this.turn ? [...acc, [x, y]] : acc),
+      []
+    )
+  );
 
-    for (const [x, y] of turnPositions) {
-      const right = zip(range(x, x + 4), repeat5(y));
-      const left = zip(range(x, x - 4), repeat5(y));
-      const top = zip(repeat5(x), range(y, y + 4));
-      const bottom = zip(repeat5(x), range(y, y - 4));
-      const bottomLeft = zip(range(x, x + 4), range(y, y + 4));
-      const bottomRight = zip(range(x, x - 4), range(y, y + 4));
-      const topRight = zip(range(x, x + 4), range(y, y - 4));
-      const topLeft = zip(range(x, x - 4), range(y, y - 4));
+  for (const [x, y] of turnPositions) {
+    const right = zip(range(x, x + 4), repeat5(y));
+    const left = zip(range(x, x - 4), repeat5(y));
+    const top = zip(repeat5(x), range(y, y + 4));
+    const bottom = zip(repeat5(x), range(y, y - 4));
+    const bottomLeft = zip(range(x, x + 4), range(y, y + 4));
+    const bottomRight = zip(range(x, x - 4), range(y, y + 4));
+    const topRight = zip(range(x, x + 4), range(y, y - 4));
+    const topLeft = zip(range(x, x - 4), range(y, y - 4));
 
-      const toTurn = ([x, y]) => this.grid[y][x];
-      const isSameTurn = (turn) => turn === this.turn;
+    const toTurn = ([x, y]) => this.grid[y][x];
+    const isSameTurn = (turn) => turn === this.turn;
 
-      const fiveInRow = !![
-        right,
-        left,
-        top,
-        bottom,
-        topRight,
-        topLeft,
-        bottomRight,
-        bottomLeft,
-      ]
-        .filter((poss) => poss.every(isInBoard))
-        .filter((poss) => poss.map(toTurn).every(isSameTurn)).length;
+    const fiveInRow = !![right, left, top, bottom, topRight, topLeft, bottomRight, bottomLeft]
+      .filter((poss) => poss.every(isInBoard))
+      .filter((poss) => poss.map(toTurn).every(isSameTurn)).length;
 
-      if (fiveInRow) {
-        return ui.win(this.turn);
-      }
+    if (fiveInRow) {
+      return ui.win(this.turn);
     }
   }
-  ```
+}
+```
 
   </details>
+&nbsp;
 
-* 놓은 바둑알을 스택에 넣어서 물리기 기능을 추가했다.
+### 놓은 바둑알을 순서대로 스택에 넣어서 물리기 기능을 추가했다.
+
+태어나서 처음으로 `undo` 기능을 구현해봤다.
 
 &nbsp;
 
@@ -274,9 +296,52 @@
 
 <img alt="tetris" src="https://user-images.githubusercontent.com/22253556/81934265-a5572a00-9629-11ea-9f8f-6d807f4f37cb.png" width="400px"/>
 
-- [100줄 테트리스](https://github.com/Alaricus/SimpleTetris)의 로직과 [데릭 아저씨의 테트리스](https://www.youtube.com/watch?v=QDp8BZbwOqk)의 UI를 합쳤다.
+### [100줄 테트리스](https://github.com/Alaricus/SimpleTetris)의 로직과 [데릭 아저씨의 테트리스](https://www.youtube.com/watch?v=QDp8BZbwOqk)의 UI를 합쳤다.
 
-- 거기에 다음 블록보기, 블록 한번에 내리기 기능 추가
+100줄 테트리스는 함수형 프로그래밍스러운 로직을 짜서 코드 이해가 쉽지만 UI가 아쉽다.
+
+데릭 아저씨의 테트리스는 UI가 보기는 좋지만 로직에 오류가 있다.
+
+두 코드를 믹스 & 매치했다.
+
+남이 잘 짜놓은 코드 가져다가 내 것으로 만드는게 제일 행복하다.
+
+### 다음 블록보기, 블록 한번에 내리기 기능 추가
+
+후임들의 추천으로 넣은 기능이다.
+
+<details>
+<summary>구구절절한 뒷 이야기</summary>
+
+블록 내리기 기능은 블럭을 순간이동해서 그냥 아래 배치하는 것보단
+
+다음과 같은 로직을 활용해서 청량감있는 애니메이션을 추가했다.
+
+```js
+while(블럭 내리기 가능할 때까지) 블럭 한 칸 내리기
+```
+
+그러면 블럭이 슈웅하고 내려온다.
+
+그런데 블럭이 내려가는 도중에 왼쪽이나 오른쪽 화살표를 누르면 다른 블럭이랑 겹치는 버그가 발생한다.
+
+그래서 `lock` 변수를 추가해서 블럭이 내려가는 도중엔 키입력을 막았는데
+
+블럭을 내리다가 어쩌다 오류가 나면 `lock`이 안 풀려서 그 뒤로 키입력이 먹통이 된다.
+
+이 버그를 없애기 위해
+
+1. 오류가 발생하는 로직 다 뜯어고치기 - 시간 오래 걸리고 머리 아픔
+2. 애니메이션을 포기해서 오류 발생하는 일이 없게하기 - 재미없음
+3. `lock` 변수를 빼서 블럭이 겹치게 냅두기 - 자존심 상함
+
+결국 `lock`이 알아서 풀리게 타임아웃을 줬지만,
+
+문제의 해결책이 또 다른 문제의 원인이 되는 프로그래머의 비련한 운명을 체험하는 계기가 됐다.
+
+</details>
+
+&nbsp;
 
 ## [스택!](https://html-games.surge.sh/stack)
 
@@ -300,32 +365,32 @@
 
 <img alt="maze" src="https://user-images.githubusercontent.com/22253556/82049751-dac74a80-96f1-11ea-96d8-f3fff2f002a9.png" width="400px"/>
 
-- 리얼월드 알고리즘 1장 과제에서 DFS로 미로 생성 프로그램을 만들라고 해서 만들었다.
+### 리얼월드 알고리즘 1장, **DFS로 미로 생성 프로그램을 만들기 과제**를 풀다가 만들었다.
 
-  - 스택기반 DFS는 코드가 정말 짧다.
+- 스택기반 DFS는 코드가 정말 짧다.
 
-  ```js
-  const initialCell = grid[0][0]
+```js
+const initialCell = grid[0][0]
 
-  initialCell.visit()
+initialCell.visit()
 
-  const stack = [initialCell]
+const stack = [initialCell]
 
-  let currentCell
+let currentCell
 
-  while (stack.length) {
-    currentCell = stack.pop()
+while (stack.length) {
+  currentCell = stack.pop()
 
-    const neighborCell = currentCell.randomNeighbor(grid)
+  const neighborCell = currentCell.randomNeighbor(grid)
 
-    if (neighborCell) {
-      stack.push(currentCell)
-      removeWall(currentCell, neighborCell)
-      neighborCell.visit()
-      stack.push(neighborCell)
-    }
+  if (neighborCell) {
+    stack.push(currentCell)
+    removeWall(currentCell, neighborCell)
+    neighborCell.visit()
+    stack.push(neighborCell)
   }
-  ```
+}
+```
 
 - 프린터로 출력해서 펜으로 풀 수 있게 `인쇄하기` 버튼을 추가했다.
 
@@ -339,19 +404,19 @@
 
 <img alt="canban2" src="https://user-images.githubusercontent.com/22253556/81934425-e51e1180-9629-11ea-85d4-bff5f6e671c8.png" width="400px"/>
 
-- 오프라인 저장을 위해 `html`을 통짜로 덤프 떠서 `LocalStorage`에 저장한다.
+### 오프라인 저장을 위해 `html`을 통짜로 덤프 떠서 `LocalStorage`에 저장한다.
 
-  - 다시 불러올 땐 `html`을 컨테이너의 `innerHTML`으로 설정하고 이벤트 리스너만 붙이면 끝
+- 다시 불러올 땐 `html`을 컨테이너의 `innerHTML`으로 설정하고 이벤트 리스너만 붙이면 끝
 
-  - SPA 프레임워크를 쓴다면 상상도 못할 일
+- SPA 프레임워크를 쓴다면 상상도 못할 일
 
-- CSS 변수를 사용해서 간단하게 다크 모드를 구현했다.
+### CSS 변수를 사용해서 간단하게 다크 모드를 구현했다.
 
 &nbsp;
 
-## 이외에
+# 이외에
 
-### 2048
+## `2048`
 
 ![image](https://user-images.githubusercontent.com/22253556/90393773-5dceb700-e0cc-11ea-88ba-0b190188ba81.png)
 
@@ -361,7 +426,7 @@
 
 메서드는 함수형으로 리팩터링했더니 1000줄짜리 코드가 700줄로 줄였다.
 
-### 스네이크
+## 스네이크
 
 ![image](https://user-images.githubusercontent.com/22253556/90393982-bf8f2100-e0cc-11ea-8087-08002e90aaea.png)
 
