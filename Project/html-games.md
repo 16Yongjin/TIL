@@ -288,7 +288,7 @@ checkWin() {
 
 ### 놓은 바둑알을 순서대로 스택에 넣어서 물리기 기능을 추가했다.
 
-태어나서 처음으로 `undo` 기능을 구현해봤다.
+`undo` 기능을 처음으로 구현해봤다.
 
 &nbsp;
 
@@ -337,7 +337,7 @@ while(블럭 내리기 가능할 때까지) 블럭 한 칸 내리기
 
 결국 `lock`이 알아서 풀리게 타임아웃을 줬지만,
 
-문제의 해결책이 또 다른 문제의 원인이 되는 프로그래머의 비련한 운명을 체험하는 계기가 됐다.
+문제를 해결했더니 문제의 해결책이 또 다른 문제의 원인이 되는 프로그래머의 비련한 숙명을 체험하는 계기가 됐다.
 
 </details>
 
@@ -347,15 +347,23 @@ while(블럭 내리기 가능할 때까지) 블럭 한 칸 내리기
 
 <img alt="stack" src="https://user-images.githubusercontent.com/22253556/86470747-07edbc00-bd77-11ea-9457-aee76662e62c.png" width="400px"/>
 
-- [Pure CSS Stack](https://codepen.io/finnhvman/pen/xJRMJp)에 영감을 받음
+### [Pure CSS Stack](https://codepen.io/finnhvman/pen/xJRMJp)에 영감을 받음
 
-* 게임 로직 만드는 데 3일, 게임 종료 애니메이션을 만드는 데 일주일 걸렸다.
+Pure CSS Stack은 HTML과 CSS만 사용해서 3D Stack 애니메이션을 구현했다.
 
-![test](https://user-images.githubusercontent.com/22253556/90395078-d5054a80-e0ce-11ea-8153-4f5621c8bac7.gif)
+`three.js` 없이 바닐라 Canvas로는 3D 구현이 어려워서 2D로 구현했다.
+
+3D 구현을 위해서는 3D 공간을 모델링하고 이를 레이 트레이싱한 것을 2D 캔버스에 투영하거나
+
+`WebGL`을 사용해야하는데 이렇게 하려면 전문하사 신청해야 끝낼 수 있어서 안 했다.
+
+### 게임 로직 만드는 데 3일 밖에 안 걸렸지만 게임 종료 애니메이션을 만드는 데 일주일 걸렸다.
+
+<img alt="stack end" src="https://user-images.githubusercontent.com/22253556/90395078-d5054a80-e0ce-11ea-8153-4f5621c8bac7.gif" width="400px"/>
 
 - 게임이 끝나면 화면이 서서히 축소되면서 지금까지 쌓아올린 블록을 보여준다.
 
-- 캔버스의 `scale`과 `translate`를 조정하는 게 힘들었다.
+- 캔버스의 `scale`과 `translate`를 프레임마다 적절히 조정하는 게 어려웠다.
 
 &nbsp;
 
@@ -367,7 +375,8 @@ while(블럭 내리기 가능할 때까지) 블럭 한 칸 내리기
 
 ### 리얼월드 알고리즘 1장, **DFS로 미로 생성 프로그램을 만들기 과제**를 풀다가 만들었다.
 
-- 스택기반 DFS는 코드가 정말 짧다.
+<details>
+  <summary>스택기반 DFS는 코드가 정말 짧다.</summary>
 
 ```js
 const initialCell = grid[0][0]
@@ -392,9 +401,11 @@ while (stack.length) {
 }
 ```
 
-- 프린터로 출력해서 펜으로 풀 수 있게 `인쇄하기` 버튼을 추가했다.
+</details>
 
-- 사진처럼 방향키로 미로 탐색도 가능하다.
+### 프린터로 출력해서 펜으로 풀 수 있게 `인쇄하기` 버튼을 추가했다.
+
+### 사진처럼 방향키로 미로 탐색도 가능하다.
 
 &nbsp;
 
@@ -418,7 +429,7 @@ while (stack.length) {
 
 ## `2048`
 
-![image](https://user-images.githubusercontent.com/22253556/90393773-5dceb700-e0cc-11ea-88ba-0b190188ba81.png)
+<img alt="canban2" src="https://user-images.githubusercontent.com/22253556/90393773-5dceb700-e0cc-11ea-88ba-0b190188ba81.png" width="400px"/>
 
 싸지방에서 인쇄한 2048 코드를 하나하나 입력해서 구현했다.
 
@@ -428,7 +439,7 @@ while (stack.length) {
 
 ## 스네이크
 
-![image](https://user-images.githubusercontent.com/22253556/90393982-bf8f2100-e0cc-11ea-8087-08002e90aaea.png)
+<img alt="canban2" src="https://user-images.githubusercontent.com/22253556/90393982-bf8f2100-e0cc-11ea-8087-08002e90aaea.png" width="400px"/>
 
 33줄로 구현하는 리액트를 구현하고
 
