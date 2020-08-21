@@ -41,6 +41,8 @@
 
 ## [스와이프 벽돌 깨기](https://html-games.surge.sh/brick-breaker)
 
+&nbsp;
+
 <img alt="sbb" src="https://user-images.githubusercontent.com/22253556/81933996-2cf06900-9629-11ea-9b4e-31cee7502d29.png " width="400px"/>
 
 ### 자바스크립트 버전은 세상에서 유일한 것 같다.
@@ -65,6 +67,8 @@
 
 - 각 요소 간 상호작용과 렌더링은 `GameManager` 클래스에서 담당한다.
 
+> 객체 지향으로 구조를 잡고 함수형으로 메서드를 구현하는 방식이 나름 합리적인 개발 방식인 것 같다.
+
 ### 이외에
 
 - 파티클 시스템으로 `Brick`이 깨졌을 때 타격감 있는 이펙트를 제공한다.
@@ -77,11 +81,13 @@
 
 ## [장기](https://html-games.surge.sh/janggi)
 
+&nbsp;
+
 <img alt="janggji" src="https://user-images.githubusercontent.com/22253556/81934129-645f1580-9629-11ea-89b9-5bdf53918eb2.png" width="400px"/>
 
 ### 말의 경로를 **함수형 프로그래밍**으로 모델링했다.
 
-- `for` 문이 없다.
+- `for` 문과 변수가 없다.
 
 - 코드도 짧아서 경로 계산만 100줄 내외
 
@@ -232,11 +238,9 @@
 
 ## [오목](https://html-games.surge.sh/omok)
 
+&nbsp;
+
 <img alt="gomoku" src="https://user-images.githubusercontent.com/22253556/81934177-7ccf3000-9629-11ea-8478-fb1894a93e84.png" width="400px"/>
-
-### 3시간만에 만들었다.
-
-장기를 만들고 나니 오목 정도는 식은 죽 먹기였다.
 
 ### 바둑 판자 / 바둑 선 / 바둑알 놓는 곳 3개로 레이어를 나눠서 쉽게 UI를 구현했다.
 
@@ -288,11 +292,13 @@ checkWin() {
 
 ### 놓은 바둑알을 순서대로 스택에 넣어서 물리기 기능을 추가했다.
 
-`undo` 기능을 처음으로 구현해봤다.
+- `undo` 기능을 처음으로 구현해봤다.
 
 &nbsp;
 
 ## [테트리스](https://html-games.surge.sh/tetris)
+
+&nbsp;
 
 <img alt="tetris" src="https://user-images.githubusercontent.com/22253556/81934265-a5572a00-9629-11ea-9f8f-6d807f4f37cb.png" width="400px"/>
 
@@ -345,9 +351,11 @@ while(블럭 내리기 가능할 때까지) 블럭 한 칸 내리기
 
 ## [스택!](https://html-games.surge.sh/stack)
 
+&nbsp;
+
 <img alt="stack" src="https://user-images.githubusercontent.com/22253556/86470747-07edbc00-bd77-11ea-9457-aee76662e62c.png" width="400px"/>
 
-### [Pure CSS Stack](https://codepen.io/finnhvman/pen/xJRMJp)에 영감을 받음
+### [Pure CSS Stack](https://codepen.io/finnhvman/pen/xJRMJp)에 영감을 받았다.
 
 Pure CSS Stack은 HTML과 CSS만 사용해서 3D Stack 애니메이션을 구현했다.
 
@@ -417,9 +425,9 @@ while (stack.length) {
 
 ### 오프라인 저장을 위해 `html`을 통짜로 덤프 떠서 `LocalStorage`에 저장한다.
 
-- 다시 불러올 땐 `html`을 컨테이너의 `innerHTML`으로 설정하고 이벤트 리스너만 붙이면 끝
+- 다시 불러올 땐 `html` 덤프를 컨테이너의 `innerHTML`으로 설정하고 이벤트 리스너만 붙이면 끝
 
-- SPA 프레임워크를 쓴다면 상상도 못할 일
+- SPA 프레임워크를 쓴다면 이런 방식이 불가능하다.
 
 ### CSS 변수를 사용해서 간단하게 다크 모드를 구현했다.
 
@@ -429,6 +437,8 @@ while (stack.length) {
 
 ## `2048`
 
+&nbsp;
+
 <img alt="canban2" src="https://user-images.githubusercontent.com/22253556/90393773-5dceb700-e0cc-11ea-88ba-0b190188ba81.png" width="400px"/>
 
 싸지방에서 인쇄한 2048 코드를 하나하나 입력해서 구현했다.
@@ -437,7 +447,11 @@ while (stack.length) {
 
 메서드는 함수형으로 리팩터링했더니 1000줄짜리 코드가 700줄로 줄였다.
 
+&nbsp;
+
 ## 스네이크
+
+&nbsp;
 
 <img alt="canban2" src="https://user-images.githubusercontent.com/22253556/90393982-bf8f2100-e0cc-11ea-8087-08002e90aaea.png" width="400px"/>
 
@@ -451,8 +465,8 @@ while (stack.length) {
 
 ## 느낀 점
 
-- 게임 개발이 남들 다 하길래 쉬울 줄 알았는데 넘모 어려웠다.
+- 남들 다 장기나 공 튀기기 하나씩 만들길래 게임 제작을 쉽게 봤는데 힘든 점이 많았다.
 
-- 근데 하다보면 되는 게 신기하다.
+- 근데 하다보면 된다.
 
 - 크롬 최고
