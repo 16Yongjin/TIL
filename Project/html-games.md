@@ -51,7 +51,7 @@
 
 ### 공 발사는 예전에 만들었던 당구 게임에서 착안했다.
 
-- 공 발사 각도는 두 점으로 각도를 구하는 아크 탄젠트(`Math.atan2`)를 사용해서 구했다.
+- 공 발사 각도는 두 점으로 각도를 구하는 아크 탄젠트(`Math.atan2`) 함수를 사용해서 구했다.
 
 - 그 뒤로 공 벽 반사, 공과 벽돌 충돌 감지, 보너스 공, 벽돌과 바닥 충돌 감지 등의 기능을 하나씩 추가하다보니 완성했다.
 
@@ -228,11 +228,11 @@
 
 ### 인공지능과 대전하기 기능을 추가하려고 했다.
 
-자신에겐 유리하고 상대에겐 불리한 선택 경로를 찾는 미니맥스 알고리즘과 불필요한 경로는 무시하는 가지치기 알고리즘을 공부했다.
+- 자신에겐 유리하고 상대에겐 불리한 선택 경로를 찾는 미니맥스 알고리즘과 불필요한 경로는 무시하는 가지치기 알고리즘을 공부했다.
 
-한편, 프로그램의 모델 부분과 뷰 부분이 강결합돼있는 바람에 미니맥스 알고리즘을 구현하려면 코드를 다 갈아엎어야 돼서 포기했다.
+- 한편, 프로그램의 모델 부분과 뷰 부분이 강결합돼있는 바람에 미니맥스 알고리즘을 구현하려면 코드를 다 갈아엎어야 돼서 포기했다.
 
-다음부턴 뷰와 모델 사이에 컨트롤러를 꼭 추가해야겠다.
+- 다음부턴 뷰와 모델 사이에 컨트롤러를 꼭 추가해야겠다.
 
 &nbsp;
 
@@ -304,48 +304,17 @@ checkWin() {
 
 ### [100줄 테트리스](https://github.com/Alaricus/SimpleTetris)의 로직과 [데릭 아저씨의 테트리스](https://www.youtube.com/watch?v=QDp8BZbwOqk)의 UI를 합쳤다.
 
-100줄 테트리스는 함수형 프로그래밍스러운 로직을 짜서 코드 이해가 쉽지만 UI가 아쉽다.
+- 100줄 테트리스는 함수형 프로그래밍스러운 로직을 짜서 코드 이해가 쉽지만 UI가 아쉽다.
 
-데릭 아저씨의 테트리스는 UI가 보기는 좋지만 로직에 오류가 있다.
+- 데릭 아저씨의 테트리스는 UI가 보기는 좋지만 로직에 오류가 있다.
 
-두 코드를 믹스 & 매치했다.
+- 두 코드를 믹스 & 매치했다.
 
-남이 잘 짜놓은 코드 가져다가 내 것으로 만드는게 제일 행복하다.
+- 남이 잘 짜놓은 코드 가져다가 내 것으로 만드는게 제일 행복하다.
 
 ### 다음 블록보기, 블록 한번에 내리기 기능 추가
 
-후임들의 추천으로 넣은 기능이다.
-
-<details>
-<summary>구구절절한 뒷 이야기</summary>
-
-블록 내리기 기능은 블럭을 순간이동해서 그냥 아래 배치하는 것보단
-
-다음과 같은 로직을 활용해서 청량감있는 애니메이션을 추가했다.
-
-```js
-while(블럭 내리기 가능할 때까지) 블럭 한 칸 내리기
-```
-
-그러면 블럭이 슈웅하고 내려온다.
-
-그런데 블럭이 내려가는 도중에 왼쪽이나 오른쪽 화살표를 누르면 다른 블럭이랑 겹치는 버그가 발생한다.
-
-그래서 `lock` 변수를 추가해서 블럭이 내려가는 도중엔 키입력을 막았는데
-
-블럭을 내리다가 어쩌다 오류가 나면 `lock`이 안 풀려서 그 뒤로 키입력이 먹통이 된다.
-
-이 버그를 없애기 위해
-
-1. 오류가 발생하는 로직 다 뜯어고치기 - 시간 오래 걸리고 머리 아픔
-2. 애니메이션을 포기해서 오류 발생하는 일이 없게하기 - 재미없음
-3. `lock` 변수를 빼서 블럭이 겹치게 냅두기 - 자존심 상함
-
-결국 `lock`이 알아서 풀리게 타임아웃을 줬지만,
-
-문제를 해결했더니 문제의 해결책이 또 다른 문제의 원인이 되는 프로그래머의 비련한 숙명을 체험하는 계기가 됐다.
-
-</details>
+- 후임들의 요청으로 넣은 기능이다.
 
 &nbsp;
 
@@ -357,13 +326,15 @@ while(블럭 내리기 가능할 때까지) 블럭 한 칸 내리기
 
 ### [Pure CSS Stack](https://codepen.io/finnhvman/pen/xJRMJp)에 영감을 받았다.
 
-Pure CSS Stack은 HTML과 CSS만 사용해서 3D Stack 애니메이션을 구현했다.
+- Pure CSS Stack은 HTML과 CSS만 사용해서 3D Stack 애니메이션을 구현했다.
 
-`three.js` 없이 바닐라 Canvas로는 3D 구현이 어려워서 2D로 구현했다.
+- 대신에 50칸 밖에 쌓을 수 없어서 JS 버전으로 새로 만들었다.
 
-3D 구현을 위해서는 3D 공간을 모델링하고 이를 레이 트레이싱한 것을 2D 캔버스에 투영하거나
+- `three.js` 없이 바닐라 `Canvas`로는 3D 구현이 어려워서 2D로 구현했다.
 
-`WebGL`을 사용해야하는데 이렇게 하려면 전문하사 신청해야 끝낼 수 있어서 안 했다.
+- 3D 구현을 위해서는 3D 공간을 모델링하고 이를 레이 트레이싱한 것을 2D 캔버스에 투영하거나
+
+- `WebGL`을 사용해야하는데 이렇게 하려면 전문하사 신청해야 끝낼 수 있어서 안 했다.
 
 ### 게임 로직 만드는 데 3일 밖에 안 걸렸지만 게임 종료 애니메이션을 만드는 데 일주일 걸렸다.
 
@@ -381,39 +352,39 @@ Pure CSS Stack은 HTML과 CSS만 사용해서 3D Stack 애니메이션을 구현
 
 <img alt="maze" src="https://user-images.githubusercontent.com/22253556/82049751-dac74a80-96f1-11ea-96d8-f3fff2f002a9.png" width="400px"/>
 
-### 리얼월드 알고리즘 1장, **DFS로 미로 생성 프로그램을 만들기 과제**를 풀다가 만들었다.
+- 리얼월드 알고리즘 1장, **DFS로 미로 생성 프로그램을 만들기** 과제를 풀다가 만들었다.
 
-<details>
-  <summary>스택기반 DFS는 코드가 정말 짧다.</summary>
+  <details>
+    <summary>스택기반 DFS는 코드가 정말 짧다.</summary>
 
-```js
-const initialCell = grid[0][0]
+  ```js
+  const initialCell = grid[0][0]
 
-initialCell.visit()
+  initialCell.visit()
 
-const stack = [initialCell]
+  const stack = [initialCell]
 
-let currentCell
+  let currentCell
 
-while (stack.length) {
-  currentCell = stack.pop()
+  while (stack.length) {
+    currentCell = stack.pop()
 
-  const neighborCell = currentCell.randomNeighbor(grid)
+    const neighborCell = currentCell.randomNeighbor(grid)
 
-  if (neighborCell) {
-    stack.push(currentCell)
-    removeWall(currentCell, neighborCell)
-    neighborCell.visit()
-    stack.push(neighborCell)
+    if (neighborCell) {
+      stack.push(currentCell)
+      removeWall(currentCell, neighborCell)
+      neighborCell.visit()
+      stack.push(neighborCell)
+    }
   }
-}
-```
+  ```
 
-</details>
+  </details>
 
-### 프린터로 출력해서 펜으로 풀 수 있게 `인쇄하기` 버튼을 추가했다.
+* 프린터로 출력해서 펜으로 풀 수 있게 `인쇄하기` 버튼을 추가했다.
 
-### 사진처럼 방향키로 미로 탐색도 가능하다.
+* 사진처럼 방향키로 미로 탐색도 가능하다.
 
 &nbsp;
 
