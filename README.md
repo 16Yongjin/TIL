@@ -86,6 +86,7 @@
 - [script 태그 defer vs async](Javascript/script-defer-async.md)
 - [scrollIntoView 사용법](Javascript/scrollIntoView.md)
 - [시스템 다크 모드 확인하기](Javascript/System-Dark-Mode-Detection.md)
+- [reflow를 일으키는 것들](Javascript/what-forces-layout-reflow.md)
 
 ## Linux
 
