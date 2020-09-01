@@ -31,6 +31,10 @@
 - [Longest Common Subsequence](Algorithms/Longest-Common-Subsequence.md)
 - [Longest Common Substring](Algorithms/Longest-Common-Substring.md)
 
+## 컴퓨터 구조
+
+- [CPU 성능 측정](ComputerArchitecture\1._CPU_성능.md)
+
 ## CSS
 
 - [HTML 대각선 그리기](CSS/crossline.md)
