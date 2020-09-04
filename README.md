@@ -88,6 +88,7 @@
 - [Get better at JavaScript with just JavaScript](Javascript/Get-better-at-JavaScript-with-just-JavaScript.md)
 - [Little Lisp Interpreter](Javascript/Little-Lisp-Interpreter.md)
 - [offsetWidth와 clientWidth의 차이](Javascript/offsetWidth-vs-clientWidth.md)
+- [Canvas 내 다각형 점 충돌 감지](Javascript/path2d-collision-detecting.md)
 - [script 태그 defer vs async](Javascript/script-defer-async.md)
 - [scrollIntoView 사용법](Javascript/scrollIntoView.md)
 - [시스템 다크 모드 확인하기](Javascript/System-Dark-Mode-Detection.md)
