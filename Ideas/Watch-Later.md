@@ -113,3 +113,9 @@
 - [구글에서 만든 로컬 이미지 압축 유틸](https://squoosh.app/)
 
 - [3D 입체 텍스트 만들기](https://bennettfeely.com/ztext/)
+
+## 레포
+
+- [엄청 빠른 블로그](https://github.com/google/eleventy-high-performance-blog)
+  - 구글에서 만든 극한의 최적화 블로그 생성기
+  - 눈 여겨 볼만한 다양한 최적화 기법이 많다.
