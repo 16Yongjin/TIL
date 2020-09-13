@@ -22,42 +22,42 @@
 
 #### 이미지
 
-- Generates multiple sizes of each image and uses them in **`srcset`**.
-- Generates a **blurry placeholder** for each image (without adding an HTML element or using JS).
-- Transcodes images to [AVIF](<https://en.wikipedia.org/wiki/AV1#AV1_Image_File_Format_(AVIF)>) (currently off-by-default due to instabillity of the encoder) and [webp](https://developers.google.com/speed/webp) and generates `picture` element.
-- **Lazy loads** images (using [native `loading=lazy`](https://web.dev/native-lazy-loading/)).
-- **Async decodes** images (using `decoding=async`).
-- **Avoids CLS impact** of images by inferring and providing width and height (Supported in Chrome, Firefox and Safari 14+).
-- Downloads remote images and stores/serves them locally.
-- Immutable URLs.
+- 다양한 크기의 이미지를 생성하고 `srcset`에서 사용한다.
+- 각 이미지마다 **blurry placeholder**를 생성한다.(HTML 요소를 추가하거나 JS를 사용하지 않음)
+- 이미지를 [AVIF](<https://en.wikipedia.org/wiki/AV1#AV1_Image_File_Format_(AVIF)>) (인코더가 안정화되지 않아서 현재는 꺼져있음)와 [webp](https://developers.google.com/speed/webp)로 트랜스코딩하고 `picture` 요소를 생성한다.
+- 이미지들을 **지연 로딩**한다. ([내장 `loading=lazy`](https://web.dev/native-lazy-loading/) 사용).
+- 이미지를 **비동기 디코딩**한다. (`decoding=async` 사용).
+- 이미지의 **CLS**를 막기 위해 이미지의 높이와 너비를 예측해서 제공함 (Chrome, Firefox, Safari 14+에서 지원함).
+- 원격 이미지를 다운로드해서 로컬에 저장하고 서빙함.
+- 불변 URL.
 
 #### CSS
 
-- Defaults to the compact "classless" [Bahunya CSS framework](https://kimeiga.github.io/bahunya/).
-- Inlines CSS.
-- Dead-code-eliminates / tree-shakes / purges (pick your favorite word) unused CSS on a per-page basis with [PurgeCSS](https://purgecss.com/).
-- Minified CSS with [csso](https://www.npmjs.com/package/csso).
+- 용량이 적은 "클래스가 없는" [Bahunya CSS 프레임워크](https://kimeiga.github.io/bahunya/) 기본 사용.
+- CSS 인라인함.
+- 안 쓰는 코드 제거 / 트리 쉐이킹 / [PurgeCSS](https://purgecss.com/)를 사용해서 페이지 마다 안 쓰는 CSS를 제거함.
+- [csso](https://www.npmjs.com/package/csso)로 CSS 축소.
 
-#### Miscellaneous
+#### 기타
 
-- Immutable URLs for JS.
-- Sets immutable caching headers for images, fonts, and JS (CSS is inlined). Currently implements for Netlify `_headers` file.
-- Minifies HTML and optimizes it for compression. Uses [html-minifier](https://www.npmjs.com/package/html-minifier) with aggressive options.
-- Uses [rollup](https://rollupjs.org/) to bundle JS and minifies it with [terser](https://terser.org/).
-- Prefetches same-origin navigations when a navigation is likely.
-- If an AMP files is present, [optimizes it](https://amp.dev/documentation/guides-and-tutorials/optimize-and-measure/optimize_amp/).
+- JS URL은 불변하게.
+- 이미지, 폰트, JS에 불변 캐싱 해더를 설정함(CSS는 인라인되어 있음). 현재는 Netlify `_headers` file만 구현되어 있음.
+- HTML를 축소하고 압축을 위해 최적화함. [html-minifier](https://www.npmjs.com/package/html-minifier)에 aggressive 옵션을 넣어서 사용.
+- [rollup](https://rollupjs.org/)로 JS를 번들링하고 [terser](https://terser.org/)로 축소함.
+- 내비게이션이 일어날 거 같을 때 Orgin이 같은 내비게이션을 미리 불러옴.
+- AMP 파일이 있으면 [최적화 함](https://amp.dev/documentation/guides-and-tutorials/optimize-and-measure/optimize_amp/).
 
 #### Fonts
 
-- Serves fonts from same origin.
-- Makes fonts `display:swap`.
+- 같은 오리진에서 폰트를 서빙함.
+- fonts에 `display:swap` 옵션 적용.
 
 #### Analytics
 
-- Supports locally serving Google Analytics's JS and proxying it's hit requests to a Netlify proxy (other proxies could be easily added).
-- Support for noscript hit requests.
-- Avoids blocking onload on analytics requests.
-- To turn this on, specify `googleAnalyticsId` in `metadata.json`.
+- Google Analytics의 JS 파일을 로컬에서 제공하고 Hit 요청을 Netlify 프록시로 보냄.
+- noscript hit 요청 지원.
+- 동기적 analytics 요청을 하지 않음.
+- 이를 위해 `metadata.json`의 `googleAnalyticsId`를 명시함.
 
 ### DX features
 
