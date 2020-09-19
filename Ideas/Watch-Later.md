@@ -114,6 +114,8 @@
 
 - [3D 입체 텍스트 만들기](https://bennettfeely.com/ztext/)
 
+- [배경 없애기, 누끼 따주는 사이트](https://www.remove.bg/ko)
+
 ## 레포
 
 - [엄청 빠른 블로그](https://github.com/google/eleventy-high-performance-blog)
