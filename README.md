@@ -42,6 +42,7 @@
 
 ## CSS
 
+- [Clamp](CSS/clamp.md)
 - [HTML 대각선 그리기](CSS/crossline.md)
 - [CSS Variable](CSS/css-variables.md)
 - [수평 스크롤](CSS/horizontal-scroll.md)
