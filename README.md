@@ -46,6 +46,7 @@
 - [HTML 대각선 그리기](CSS/crossline.md)
 - [CSS Variable](CSS/css-variables.md)
 - [수평 스크롤](CSS/horizontal-scroll.md)
+- [Smooth scrolling with one line of CSS](CSS/smooth-scrolling.md)
 
 ## DataStructure
 
