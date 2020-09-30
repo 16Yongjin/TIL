@@ -19,6 +19,7 @@
 - [Node.js](#node)
 - [OS](#os)
 - [Project](#project)
+- [Python](#python)
 - [React](#react)
 - [Rust](#rust)
 - [Ideas](#ideas)
@@ -128,6 +129,10 @@
 ## Project
 
 - [네이버 AI 버닝데이 준비](Project/naver-ai-burning.md)
+
+## Python
+
+- [is와 ==의 차이점](Python/is_vs_==.md)
 
 ## React
 
