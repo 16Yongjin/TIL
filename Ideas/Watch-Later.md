@@ -16,6 +16,16 @@
 
 - [잘 모르는 Web API 10개](https://blog.greenroots.info/10-lesser-known-web-apis-you-may-want-to-use-ckejv75cr012y70s158n85yhn)
 
+- [웹 폰트 최적화](https://d2.naver.com/helloworld/4969726)
+
+- [PostgreSQL 역사](https://d2.naver.com/helloworld/227936)
+
+- [개발자 정보 검색 팁](https://boxnwhis.kr/2020/09/27/ir-for-developers.html)
+
+- [Rust 로우 레벨 코드 작성해보기](https://lowlvl.org/tcp-ip-fundamentals/exchanging-messages)
+
+- [삼투적 의사소통이란](https://wiki.wooridle.net/%EC%B1%85/CrystalClear#A.2BwY3BMQ_3._Osmotic_Communication)
+
 ## 책
 
 - [마츠모토 유키히로의 프로그래밍 언어 만들기](http://www.acornpub.co.kr/book/language-structure)
