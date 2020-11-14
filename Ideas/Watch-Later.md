@@ -26,6 +26,8 @@
 
 - [삼투적 의사소통이란](https://wiki.wooridle.net/%EC%B1%85/CrystalClear#A.2BwY3BMQ_3._Osmotic_Communication)
 
+- [CRDT가 미래다](https://josephg.com/blog/crdts-are-the-future/)
+
 ## 책
 
 - [마츠모토 유키히로의 프로그래밍 언어 만들기](http://www.acornpub.co.kr/book/language-structure)
@@ -45,6 +47,10 @@
 - ✔ [견고한 node.js 프로젝트 설계하기](https://velog.io/@hopsprings2/견고한-node.js-프로젝트-아키텍쳐-설계하기)
 
 - [웹 스트리밍 작동방식](https://medium.com/canal-tech/how-video-streaming-works-on-the-web-an-introduction-7919739f7e1)
+
+- [리눅스 실행파일이란?](https://fasterthanli.me/series/making-our-own-executable-packer/part-1)
+
+-[Three.js와 Web Audio API로 음악 시각화](https://medium.com/@mag_ops/music-visualiser-with-three-js-web-audio-api-b30175e7b5ba)
 
 ## 카탈로그
 
@@ -66,6 +72,8 @@
 
 - [Uses This / Interviews | 다양한 분야 속 프로들의 장비 소개](https://usesthis.com/)
 
+- [CSS 코드 레퍼런스](https://wsss.tistory.com/)
+
 ## 테스팅
 
 - [javascript-testing-best-practices/readme.kr.md at master · goldbergyoni/javascript-testing-best-practices](https://github.com/goldbergyoni/javascript-testing-best-practices/blob/master/readme.kr.md)
@@ -77,6 +85,10 @@
 ## 아키텍처
 
 - [Node.js 계층 구조 설계 및 환경 변수 관리](https://jhyeok.com/node-backend-structure/)
+
+- [모던 데이터 인프라스트럭쳐 아키텍쳐](https://a16z.com/2020/10/15/the-emerging-architectures-for-modern-data-infrastructure/)
+
+- [지역성의 원칙을 고려한 패키지 구조: 기능별로 나누기](https://ahnheejong.name/articles/package-structure-with-the-principal-of-locality-in-mind/)
 
 ## 디자인
 
@@ -125,6 +137,10 @@
 - [3D 입체 텍스트 만들기](https://bennettfeely.com/ztext/)
 
 - [배경 없애기, 누끼 따주는 사이트](https://www.remove.bg/ko)
+
+- [웹 화면 녹화 후 공유](https://vasai.app/)
+
+- [이미지맵](https://www.imagemaps.net/)
 
 ## 레포
 
