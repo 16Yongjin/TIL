@@ -100,6 +100,7 @@
 - [크롬 콘솔 유틸리티 함수들](Javascript/chrome-console-utilities.md)
 - [\_.debounce trailing & leading ](Javascript/debounce-trailing-leading.md)
 - [비디오에서 프레임 추출하기](Javascript/extract-video-frames.md)
+- [파일 첨부 방식](Javascript/file-attachment-strategy.md)
 - [Get better at JavaScript with just JavaScript](Javascript/Get-better-at-JavaScript-with-just-JavaScript.md)
 - [Little Lisp Interpreter](Javascript/Little-Lisp-Interpreter.md)
 - [offsetWidth와 clientWidth의 차이](Javascript/offsetWidth-vs-clientWidth.md)
