@@ -132,6 +132,12 @@ server {
 }
 ```
 
+## nginx `Address family not supported by protocol` 에러
+
+ipv6가 꺼져있는 서버에서 발생한다.
+
+`/etc/nginx/sites-enabled/default`에서 `listen [::]:80 default_server` 부분을 주석 처리하면 해결된다.
+
 ## certbot 설정
 
 [cerbot 설정](https://certbot.eff.org/lets-encrypt/ubuntuxenial-nginx)
