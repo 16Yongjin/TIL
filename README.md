@@ -103,6 +103,7 @@
 - [파일 첨부 방식](Javascript/file-attachment-strategy.md)
 - [Get better at JavaScript with just JavaScript](Javascript/Get-better-at-JavaScript-with-just-JavaScript.md)
 - [Little Lisp Interpreter](Javascript/Little-Lisp-Interpreter.md)
+- [콘솔에서 외부 라이브러리 테스트하기](Javascript/library-console-test.md)
 - [offsetWidth와 clientWidth의 차이](Javascript/offsetWidth-vs-clientWidth.md)
 - [Canvas 내 다각형 점 충돌 감지](Javascript/path2d-collision-detecting.md)
 - [script 태그 defer vs async](Javascript/script-defer-async.md)
