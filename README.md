@@ -5,7 +5,6 @@
 ## Categories
 
 - [Algorithms](#algorithms)
-- [Architecture](#architecture)
 - [CSS](#css)
 - [Database](#database)
 - [DataStructure](#dataStructure)
@@ -33,10 +32,6 @@
 - [Knuth Morris Pratt Algorithm](Algorithms/Knuth-Morris-Pratt-Algorithm.md)
 - [Longest Common Subsequence](Algorithms/Longest-Common-Subsequence.md)
 - [Longest Common Substring](Algorithms/Longest-Common-Substring.md)
-
-# Architecture
-
-- [CMAKE](Architecture/cmake.md)
 
 ## 컴퓨터 구조
 
