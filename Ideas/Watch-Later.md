@@ -34,6 +34,8 @@
 
 - ✔ [파워 오브 데이터베이스](http://naver.me/596xjxJ3)
 
+- [웹 성능 최적화 기법](https://book.naver.com/bookdb/book_detail.nhn?bid=17664118)
+
 ## 튜토리얼
 
 - [Create a Simple POS with React, Node and MongoDB #0: Initial Setup Frontend and Backend — Soshace • Soshace](https://blog.soshace.com/create-a-simple-pos-with-react-node-and-mongodb-0-initial-setup-frontend-and-backend/)
@@ -74,6 +76,10 @@
 
 - [CSS 코드 레퍼런스](https://wsss.tistory.com/)
 
+- [국내 모바일 앱 UI 모음](https://wwit.design/)
+
+- [CSS Tips](https://markodenic.com/css-tips/)
+
 ## 테스팅
 
 - [javascript-testing-best-practices/readme.kr.md at master · goldbergyoni/javascript-testing-best-practices](https://github.com/goldbergyoni/javascript-testing-best-practices/blob/master/readme.kr.md)
@@ -89,6 +95,8 @@
 - [모던 데이터 인프라스트럭쳐 아키텍쳐](https://a16z.com/2020/10/15/the-emerging-architectures-for-modern-data-infrastructure/)
 
 - [지역성의 원칙을 고려한 패키지 구조: 기능별로 나누기](https://ahnheejong.name/articles/package-structure-with-the-principal-of-locality-in-mind/)
+
+- [Serverless Patterns Collection](https://serverlessland.com/patterns)
 
 ## 디자인
 
