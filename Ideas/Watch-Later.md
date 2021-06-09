@@ -80,6 +80,8 @@
 
 - [CSS Tips](https://markodenic.com/css-tips/)
 
+- [국내 테크 기업 기술 블로그 모음](https://techblogposts.com/)
+
 ## 테스팅
 
 - [javascript-testing-best-practices/readme.kr.md at master · goldbergyoni/javascript-testing-best-practices](https://github.com/goldbergyoni/javascript-testing-best-practices/blob/master/readme.kr.md)
