@@ -44,7 +44,8 @@
 
 ## DDD
 
-- [DDD Start!](DDD/ddd-start.md)
+- [DDD START! 9장 Bounded Context](DDD/ddd-start-09-bounded-context.md)
+- [DDD START! 10장 이벤트](DDD/ddd-start-10-event.md)
 
 ## Database
 
