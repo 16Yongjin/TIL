@@ -187,8 +187,9 @@
 - [활성 유저 확인법](Ideas/check-live-user.md)
 - [etc](Ideas/etc.md)
 - [엄청 빠른 블로그의 비법](Ideas/high-performance-blog.md)
-- [ㅈ직접 짠 컴퓨터 공학 독학 코스](Ideas/my-cs-course.md)
+- [직접 짠 컴퓨터 공학 독학 코스](Ideas/my-cs-course.md)
 - [OSRM으로 장소 간 이동거리, 시간 구하기](Ideas/osrm-routing.md)
+- [솔로워커: 미치지 않고 혼자 일하는 법](Ideas/solo-worker.md)
 - [나중에 볼 것](Ideas/Watch-Later.md)
 
 ## Software
