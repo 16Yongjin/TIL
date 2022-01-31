@@ -205,3 +205,7 @@
 ## SystemDesign
 
 - [\[대규모 시스템 설계 기초\] 1장 사용자 수에 따른 규모 확장성](SystemDesign/chapter-01-Scale-From-Zero-To-Millions-Of-Users.md)
+
+## TypeScript
+
+- [타입 팁 & 트릭](TypeScript/type-tip-and-trick.md)
