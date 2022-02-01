@@ -35,6 +35,16 @@ type AorBorC = AorB | BorC // 'a' | 'b' | 'c'
 type B = AorB & BorC // 'a'
 ```
 
+`&`가 가드역할을 한다.
+
+```ts
+type FromEntry<K, V> = { [P in K & string]: V }
+```
+
+`K`가 `string`인 것만 쏙 빼와서 레코드 타입으로 만들기
+
+`K extends string ? { [P in K]: V } : never` 이런 식으로 `string` 타입인지 `extends`로 확인할 필요 없음
+
 ## 빈 객체
 
 모든 객체는 `{}`에서 시작하므로 `{}`를 `extend`한다고 빈 객체가 아닐 수 있음
