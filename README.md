@@ -209,21 +209,3 @@
 ## TypeScript
 
 - [타입 팁 & 트릭](TypeScript/type-tip-and-trick.md)
-
-## readonly 제거하기
-
-바로 `-readonly`
-
-```ts
-type Writeable<T> = { -readonly [P in keyof T]: T[P] }
-```
-
-## 옵션 속성 제거하기
-
-`Required` 내장 타입이나 `-?` 사용
-
-```ts
-type Required = Required<T>
-// or
-type MyRequired<T> = { [K in keyof T]-?: T[K] }
-```
