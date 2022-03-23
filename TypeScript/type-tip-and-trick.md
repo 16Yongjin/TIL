@@ -163,3 +163,26 @@ type StartsWith<T, U extends string> = T extends `${any}${U}` ? true : false
 ```ts
 type Contains<T, U extends string> = T extends `${any}${U}${any}` ? true : false
 ```
+
+## 객체에서 옵셔널 속성 제거하기
+
+값이 `Required` 했을 때랑 같은지 확인해서 옵셔널 키를 걸러내기
+
+```ts
+type RequiredOnly<T> = {
+  [K in keyof T as T[K] extends Required<T>[K] ? K : never]: T[K]
+}
+
+RequiredOnly<{a?: number, b?: string, c: boolean }> // === { c: boolean }
+```
+
+## `?` 안 쓰고 함수의 인자 타입을 옵셔널로 만들기
+- 함수 오버로딩할 때 유용함
+- 인자를 써야할 때 쓰고, 안 써야할 때 쓰게 만들 수 있음
+```ts
+type OptionalParam<T> = [] | [T]
+
+const func = (...args: OptionalParam<boolean>) => {}
+func() // ok
+func(true) // ok
+```
